@@ -7,7 +7,7 @@ version = "0.0.0"
 #
 #   uv run python -m AutoGitSemVer.scripts.UpdatePythonVersion ./pyproject.toml ./src
 
-description = "TODO"
+description = "Lower the barrier to software engineering best practices in open-source repositories"
 readme = "README.md"
 authors = [
     { name = "Center for Scientific Software Engineering at Georgia Tech", email = "csse-technical@groups.gatech.edu" },
