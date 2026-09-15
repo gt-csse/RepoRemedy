@@ -25,7 +25,9 @@
 - [License](#license)
 
 ## Overview
-TODO: Complete this section
+RepoRemedy aims to lower the barrier to software engineering best practices in
+open-source repositories. It will turn RepoAuditor text and OpenSSF Scorecard JSON
+findings into reviewable issues and pull requests.
 
 ### How to use `RepoRemedy`
 TODO: Complete this section
