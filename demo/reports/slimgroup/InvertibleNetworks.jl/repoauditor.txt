@@ -1,0 +1,753 @@
+╭─────────────────────────────────── GitHub ───────────────────────────────────╮
+│                                                                              │
+│ Validates GitHub configuration settings.                                     │
+│                                                                              │
+│                                                                              │
+│ Successful:     13 (24.53%)                                                  │
+│ Warnings:       11 (20.75%)                                                  │
+│ Errors:         15 (28.30%)                                                  │
+│ Skipped:        14 (26.42%)                                                  │
+│                                                                              │
+│ ╭─ [Error] WebCommitSignoff ───────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require contributors to sign off on web-based commits'   │ │
+│ │ is set to True.                                                          │ │
+│ │                                                                          │ │
+│ │ ERROR: 'Require contributors to sign off on web-based commits' must be   │ │
+│ │ set to 'True' (it is currently set to 'False').                          │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit 'https://github.com/slimgroup/InvertibleNetworks.jl/settings' │ │
+│ │   2) Locate the 'General' section                                        │ │
+│ │   3) Ensure that 'Require contributors to sign off on web-based commits' │ │
+│ │ is checked                                                               │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require contributors to sign off on         │ │
+│ │ web-based commits.                                                       │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - All changes (regardless of where they were made) should go through   │ │
+│ │ the same validation process.                                             │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - Changes made via the web interface are considered to be benign and   │ │
+│ │ should not be subject to                                                 │ │
+│ │     the standard validation process.                                     │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] DefaultBranch ──────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Default Branch' is set to 'main'.                        │ │
+│ │                                                                          │ │
+│ │ ERROR: 'Default Branch' must be set to 'main' (it is currently set to    │ │
+│ │ 'master').                                                               │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings'.           │ │
+│ │   2) Locate the 'Default Branch' section.                                │ │
+│ │   3) Ensure that 'Default Branch' is set to 'main'.                      │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is not name the mainline/base/default branch      │ │
+│ │ "main".                                                                  │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Eliminate divisive language in favor of non-divisive language, this  │ │
+│ │ includes eliminating                                                     │ │
+│ │     the use of terms that were inappropriately and offensively taken     │ │
+│ │ from slavery including                                                   │ │
+│ │     the elimination of the term master in favor of main.                 │ │
+│ │                                                                          │ │
+│ │     https://www.linkedin.com/pulse/technology-notes-how-tos-infrastructu │ │
+│ │ re-git-master-main-eldritch/                                             │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - You are validating a legacy repository that still uses 'master' as   │ │
+│ │ the mainline/base/default branch.                                        │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] SupportDiscussions ─────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that Support for Discussions is set to False.                  │ │
+│ │                                                                          │ │
+│ │ ERROR: 'Discussions' must be set to 'False' (it is currently set to      │ │
+│ │ 'True').                                                                 │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit 'https://github.com/slimgroup/InvertibleNetworks.jl/settings' │ │
+│ │   2) Locate the 'Features' section                                       │ │
+│ │   3) Ensure that 'Discussions' is unchecked                              │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   No rationale for this default.                                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] MergeCommit ──────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Allow merge commits' is set to True.                     │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] MergeCommitMessage ───────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Allow merge commits -> Default...' is set to 'BLANK'.    │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] SquashCommitMerge ────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Allow squash merging' is set to False.                   │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] SquashMergeCommitMessage ─────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Allow squash merging -> Default...' is set to            │ │
+│ │ 'COMMIT_MESSAGES'.                                                       │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] RebaseMergeCommit ────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Allow rebase merging' is set to False.                   │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] SuggestUpdatingPullRequestBranches ───────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Always suggest updating pull request branches' is set to │ │
+│ │ False.                                                                   │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] AutoMerge ────────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Allow auto-merge' is set to True.                        │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] DeleteHeadBranches ───────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Automatically delete head branches' is set to True.      │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] DependabotSecurityUpdates ────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Dependabot security updates' is set to True.             │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] SecretScanning ───────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Secret protection' is set to True.                       │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Warning] SecretScanningPushProtection ─────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Push protection' is set to True.                         │ │
+│ │                                                                          │ │
+│ │ WARNING: Incomplete data was encountered.                                │ │
+│ │ Please update the permissions of the GitHub PAT.                         │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] Protected ──────────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Ensures that the mainline branch is protected.                           │ │
+│ │                                                                          │ │
+│ │ ERROR: The mainline branch must be protected (it is currently not        │ │
+│ │ protected).                                                              │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/branches'   │ │
+│ │   2) Locate the 'Branch protection rules' section                        │ │
+│ │   3) Protect the branch with a ruleset or classic branch protection rule │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to protect the mainline branch.                │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - The mainline branch is the most important branch in a repository and │ │
+│ │ should be protected.                                                     │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   <unknown>                                                              │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireSignedCommitsRule ───────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require signed commits' is set to True.                  │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require signed commits' found      │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require signed commits'.                                     │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require signed commits. Note that this      │ │
+│ │ setting does not work with                                               │ │
+│ │   rebase merging or squash merging.                                      │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Ensure that the author of a commit is who the claim to be.           │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - You have enabled rebase merging or squash merging.                   │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequirePullRequestsRule ────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require a pull request before merging' is set to True.   │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require a pull request before      │ │
+│ │ merging' found                                                           │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require a pull request before merging'.                      │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require pull requests before merging.       │ │
+│ │   This is because pull request reviews help maintain code quality.       │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Pull requests are an important part of the development process and   │ │
+│ │   prevent unwanted changes from making it into the mainline branch.      │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   If this is a single contributor project and the developer is aware of  │ │
+│ │   the pros and cons of pushing directly to the primary development       │ │
+│ │ branch.                                                                  │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireApprovalsRule ───────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require a pull request before merging -> Required        │ │
+│ │ approvals' is set to True.                                               │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require a pull request before      │ │
+│ │ merging -> Required approvals' found                                     │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to ''Require a pull request before merging -> Required           │ │
+│ │ approvals''.                                                             │ │
+│ │   4) Set the number of required approvals to at least 1.                 │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require at least one approval.              │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Code Reviews are a generally accepted best practice for software     │ │
+│ │ development.                                                             │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - You are the only person working on the repository (set the value to  │ │
+│ │ 0).                                                                      │ │
+│ │   - You want to require more than one approval (set the value to the     │ │
+│ │ number of approvals required).                                           │ │
+│ │   - You are not comfortable with the amount of time code reviews         │ │
+│ │ introduce in the development process (set the value to 0).               │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] DismissStalePullRequestApprovalsRule ───────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require a pull request before merging -> Dismiss stale   │ │
+│ │ pull request approvals when new commits are pushed' is set to True.      │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require a pull request before      │ │
+│ │ merging -> Dismiss stale pull request approvals when new commits are     │ │
+│ │ pushed' found                                                            │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require a pull request before merging -> Dismiss stale pull  │ │
+│ │ request approvals when new commits are pushed'.                          │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to dismiss stale pull request approvals when   │ │
+│ │ new commits are pushed.                                                  │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Approvals apply to the changes as they existed when the approval was │ │
+│ │ granted. The approval                                                    │ │
+│ │     may no longer be valid when new changes are pushed.                  │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   You trust the contributor to only make minor changes after approval.   │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireApprovalMostRecentPushRule ──────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require a pull request before merging -> Require         │ │
+│ │ approval of the most recent reviewable push' is set to True.             │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require a pull request before      │ │
+│ │ merging -> Require approval of the most recent reviewable push' found    │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require a pull request before merging -> Require approval of │ │
+│ │ the most recent reviewable push'.                                        │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require approval of the most recent         │ │
+│ │ reviewable push by someone other than the author of the pull request.    │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Self-approval of a pull request eliminates the value provided by a   │ │
+│ │ second pair of eyes during a code review.                                │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - You are the only person working on the repository.                   │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireConversationResolutionRule ──────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require a pull request before merging -> Require         │ │
+│ │ conversation resolution before merging' is set to True.                  │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require a pull request before      │ │
+│ │ merging -> Require conversation resolution before merging' found         │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require a pull request before merging -> Require             │ │
+│ │ conversation resolution before merging'.                                 │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require conversation resolution before      │ │
+│ │ merging a pull request.                                                  │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Conversation resolution is an important part of the development      │ │
+│ │ process.                                                                 │ │
+│ │   - Prevent the accidental merging of a pull request before changes      │ │
+│ │ associated with the comments have been made.                             │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   <unknown>                                                              │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireStatusChecksToPassRule ──────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require status checks to pass' is set to True.           │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require status checks to pass'     │ │
+│ │ found                                                                    │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require status checks to pass'.                              │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require status checks to pass before        │ │
+│ │ merging a pull request.                                                  │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Status checks are an important part of the development process and   │ │
+│ │ should not be bypassed.                                                  │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   <unknown>                                                              │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireUpToDateBranchesRule ────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require status checks to pass -> Require branches to be  │ │
+│ │ up to date before merging' is set to True.                               │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require status checks to pass ->   │ │
+│ │ Require branches to be up to date before merging' found                  │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require status checks to pass -> Require branches to be up   │ │
+│ │ to date before merging'.                                                 │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require branches to be up to date before    │ │
+│ │ merging. The terminology                                                 │ │
+│ │   used by GitHub is a bit confusing, as this setting ensures that all    │ │
+│ │ GitHub workflows triggered                                               │ │
+│ │   by the pull request have completed successfully before the pull        │ │
+│ │ request can be merged.                                                   │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Workflows run should pass before a pull request is merged into the   │ │
+│ │ mainline branch.                                                         │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   <unknown>                                                              │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] EnsureStatusChecksRule ─────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require status checks to pass -> Status checks that are  │ │
+│ │ required' is set to True.                                                │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require status checks to pass ->   │ │
+│ │ Status checks that are required' found                                   │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to ''Require status checks to pass -> Status checks that are     │ │
+│ │ required''.                                                              │ │
+│ │   4) Click on '+ Add checks'.                                            │ │
+│ │   5) Type the name of the check to enforce.                              │ │
+│ │   6) Select status checks that must pass before merging.                 │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to require the specification of at least one   │ │
+│ │ status check that must pass before merging.                              │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - A Continuous Integration process must be gated by some activity,     │ │
+│ │ action, or work flow.                                                    │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - Code reviews are sufficient to ensure the quality of pull requests   │ │
+│ │ before they are merged into the branch                                   │ │
+│ │     (this is not recommended).                                           │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] BlockMainlineForcePushesRule ───────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Block force pushes' is set to True.                      │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Block force pushes' found          │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Block force pushes'.                                         │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to not allow force pushes to the mainline      │ │
+│ │ branch.                                                                  │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Force pushes rewrite history, which breaks git lineage for all other │ │
+│ │ clones of the repository.                                                │ │
+│ │     Merges are possible when this happens, but they are difficult to     │ │
+│ │ perform and data loss is                                                 │ │
+│ │     possible.                                                            │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - If the repository only has a single developer or if is private.      │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] RequireCodeScanningResultsRule ─────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that 'Require code scanning results' is set to True.           │ │
+│ │                                                                          │ │
+│ │ ERROR: No active branch ruleset with 'Require code scanning results'     │ │
+│ │ found                                                                    │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Visit                                                               │ │
+│ │ 'https://github.com/slimgroup/InvertibleNetworks.jl/settings/rules'.     │ │
+│ │   2) Find or create a ruleset on the branch 'master'.                    │ │
+│ │   3) Go to 'Require code scanning results'.                              │ │
+│ │   4) Enable the rule.                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   The default behavior is to enable requiring the results of code        │ │
+│ │ scanning.                                                                │ │
+│ │                                                                          │ │
+│ │   Reasons for this Default                                               │ │
+│ │   ------------------------                                               │ │
+│ │   - Code scanning can help prevent security vulnerabilities and errors   │ │
+│ │ in your code.                                                            │ │
+│ │                                                                          │ │
+│ │   Reasons to Override this Default                                       │ │
+│ │   --------------------------------                                       │ │
+│ │   - Different users/organization may have different tools for scanning   │ │
+│ │ code for security vulnerabilities.                                       │ │
+│ │   - Single-user repositories that don't use secrets may not need this    │ │
+│ │ feature.                                                                 │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ Metrics ────────────────────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │                                                                          │ │
+│ │ Successful:     13 (24.53%)                                              │ │
+│ │ Warnings:       11 (20.75%)                                              │ │
+│ │ Errors:         15 (28.30%)                                              │ │
+│ │ Skipped:        14 (26.42%)                                              │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭───────────────────────────── ScientificSoftware ─────────────────────────────╮
+│                                                                              │
+│ Validates existence of repository files for Scientific Software.             │
+│                                                                              │
+│                                                                              │
+│ Successful:     1 (100.00%)                                                  │
+│ Warnings:       0 (0.00%)                                                    │
+│ Errors:         0 (0.00%)                                                    │
+│ Skipped:        0 (0.00%)                                                    │
+│                                                                              │
+│ ╭─ Metrics ────────────────────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │                                                                          │ │
+│ │ Successful:     1 (100.00%)                                              │ │
+│ │ Warnings:       0 (0.00%)                                                │ │
+│ │ Errors:         0 (0.00%)                                                │ │
+│ │ Skipped:        0 (0.00%)                                                │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭───────────────────────────── CommunityStandards ─────────────────────────────╮
+│                                                                              │
+│ Validates existence of repository files for Community Standards.             │
+│                                                                              │
+│                                                                              │
+│ Successful:     3 (37.50%)                                                   │
+│ Warnings:       0 (0.00%)                                                    │
+│ Errors:         5 (62.50%)                                                   │
+│ Skipped:        0 (0.00%)                                                    │
+│                                                                              │
+│ ╭─ [Error] CodeOfConduct ──────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that CODE_OF_CONDUCT file exists.                              │ │
+│ │                                                                          │ │
+│ │ ERROR: No CODE_OF_CONDUCT file found.                                    │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Create a CODE_OF_CONDUCT file in one of these locations:            │ │
+│ │      - .github/CODE_OF_CONDUCT                                           │ │
+│ │      - docs/CODE_OF_CONDUCT                                              │ │
+│ │      - CODE_OF_CONDUCT                                                   │ │
+│ │                                                                          │ │
+│ │   Example CODE_OF_CONDUCT file format:                                   │ │
+│ │   ```                                                                    │ │
+│ │   # Contributor Code of Conduct                                          │ │
+│ │   ## Principles                                                          │ │
+│ │   ## Community Guidelines                                                │ │
+│ │   ```                                                                    │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   A CODE_OF_CONDUCT defines expectations for behavior for your           │ │
+│ │   project's participants.                                                │ │
+│ │                                                                          │ │
+│ │   Benefits:                                                              │ │
+│ │   - Define community standards                                           │ │
+│ │   - Signal a welcoming and inclusive project                             │ │
+│ │   - Outline procedures for handling abuse                                │ │
+│ │   - Help create a positive social atmosphere for your community          │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] SecurityPolicy ─────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that SECURITY file exists.                                     │ │
+│ │                                                                          │ │
+│ │ ERROR: No SECURITY file found.                                           │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Create a security policy file in one of these locations:            │ │
+│ │      - .github/SECURITY.md                                               │ │
+│ │      - docs/SECURITY.md                                                  │ │
+│ │      - SECURITY.md                                                       │ │
+│ │                                                                          │ │
+│ │   Example policy can be found at:                                        │ │
+│ │   https://github.com/gt-csse/RepoAuditor/blob/main/SECURITY.md           │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   Security policies help users report vulnerabilities responsibly.       │ │
+│ │                                                                          │ │
+│ │   Benefits:                                                              │ │
+│ │   - Clear security reporting process                                     │ │
+│ │   - Responsible disclosure guidelines                                    │ │
+│ │   - Better security management                                           │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] IssueTemplates ─────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that ISSUE_TEMPLATES file exists.                              │ │
+│ │                                                                          │ │
+│ │ ERROR: No ISSUE_TEMPLATES file found.                                    │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   Add issue templates to your repository in the .github/ISSUE_TEMPLATE   │ │
+│ │ directory.                                                               │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   Issue templates help contributors create high-quality issues by        │ │
+│ │ providing a structured format.                                           │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] PullRequestTemplate ────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that PULL_REQUESTS_TEMPLATE file exists.                       │ │
+│ │                                                                          │ │
+│ │ ERROR: No PULL_REQUESTS_TEMPLATE file found.                             │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   Create a pull request template file in one of these locations:         │ │
+│ │ .github/PULL_REQUEST_TEMPLATE.md, .github/pull_request_template.md,      │ │
+│ │ docs/PULL_REQUEST_TEMPLATE.md, or PULL_REQUEST_TEMPLATE.md               │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   Pull request templates help standardize code contributions and         │ │
+│ │ expedite the review process by ensuring consistent PR format.            │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ [Error] CodeOwners ─────────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │ Validates that CODEOWNERS file exists.                                   │ │
+│ │                                                                          │ │
+│ │ ERROR: No CODEOWNERS file found.                                         │ │
+│ │                                                                          │ │
+│ │ Resolution                                                               │ │
+│ │ ----------                                                               │ │
+│ │   1) Create a CODEOWNERS file in one of these locations:                 │ │
+│ │      - .github/CODEOWNERS                                                │ │
+│ │      - docs/CODEOWNERS                                                   │ │
+│ │      - CODEOWNERS                                                        │ │
+│ │                                                                          │ │
+│ │   Example CODEOWNERS file format:                                        │ │
+│ │   # Syntax example:                                                      │ │
+│ │   # directory/ @username                                                 │ │
+│ │   # *.js @username                                                       │ │
+│ │   # /docs/ @username @username2                                          │ │
+│ │                                                                          │ │
+│ │ Rationale                                                                │ │
+│ │ ---------                                                                │ │
+│ │   CODEOWNERS files define who is responsible for code review.            │ │
+│ │                                                                          │ │
+│ │   Benefits:                                                              │ │
+│ │   - Automatic reviewer assignment                                        │ │
+│ │   - Clear code ownership                                                 │ │
+│ │   - Streamlined review process                                           │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│ ╭─ Metrics ────────────────────────────────────────────────────────────────╮ │
+│ │                                                                          │ │
+│ │                                                                          │ │
+│ │ Successful:     3 (37.50%)                                               │ │
+│ │ Warnings:       0 (0.00%)                                                │ │
+│ │ Errors:         5 (62.50%)                                               │ │
+│ │ Skipped:        0 (0.00%)                                                │ │
+│ │                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────╯ │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯

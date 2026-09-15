@@ -1,0 +1,12 @@
+Processing 3 modules...
+  Processing parallel modules (3 items)...
+    ERROR: GitHub: -123 (Processing parallel modules... failed) [/var/folders/p1/_p9mx1l16wj6x9qrrfsg58qw0000gq/T/tmp0xdu2vig/000000.log]
+  DONE! (-123, 0:01:26.085473, no items succeeded, 3 items with errors, no items with warnings)
+
+  INFO: The temporary directory '/var/folders/p1/_p9mx1l16wj6x9qrrfsg58qw0000gq/T/tmp0xdu2vig' was preserved due to errors encountered while executing tasks.
+  ERROR: None
+DONE! (-123, 0:01:26.086697)
+ERROR: None
+
+Results: DONE! (-123, 0:01:26.088367)
+
