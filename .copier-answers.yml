@@ -1,0 +1,23 @@
+# Changes here will be overwritten by Copier; DO NOT MODIFY THIS FILE DIRECTLY!
+#
+# This file was generated using copier (https://copier.readthedocs.io/) with the
+# template copier-UvScaffolding (https://github.com/gt-csse/copier-UvScaffolding).
+# Additional information (including instructions on how to use this template with copier) is
+# available at https://github.com/gt-csse/copier-UvScaffolding.
+#
+
+_commit: v0.5.13
+_src_path: E:\GitHub\gt-csse\copier-UvScaffolding
+author_email: csse-technical@groups.gatech.edu
+author_name: Center for Scientific Software Engineering at Georgia Tech
+coverage_badge_gist_id: 2f9d770d13e3a148424f374f74d41f4b
+coverage_badge_gist_username: davidbrownell
+github_host: https://github.com
+github_repo_name: RepoRemedy
+github_username: gt-csse
+install_ty: true
+license: MIT
+project_name: RepoRemedy
+python_package_name: RepoRemedy
+python_versions: '3.14'
+sign_artifacts_question: true
