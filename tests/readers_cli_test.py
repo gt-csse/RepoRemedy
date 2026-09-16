@@ -24,9 +24,9 @@ def scan():
     return json.loads((FIXTURES / "scorecard.json").read_text(encoding="utf-8"))
 
 
-def invoke(tmp_path, data, kind="ossf-scorecard", repo="acme/demo"):
+def invoke(tmp_path, data, kind="ossf-scorecard", repo="acme/demo", *, newline=None):
     path = tmp_path / "report.data"
-    path.write_text(data if isinstance(data, str) else json.dumps(data), encoding="utf-8")
+    path.write_text(data if isinstance(data, str) else json.dumps(data), encoding="utf-8", newline=newline)
     return RUNNER.invoke(app, ["inspect", str(path), "--report-type", kind, "--repo", repo])
 
 
@@ -87,16 +87,17 @@ def test_repoauditor_provenance(tmp_path):
     ],
 )
 @pytest.mark.parametrize("status", ["Warning", "Error"])
-def test_repoauditor_unavailable_evidence(tmp_path, message, status):
+@pytest.mark.parametrize("newline", [None, "\n", "\r\n"], ids=["native", "lf", "crlf"])
+def test_repoauditor_unavailable_evidence(tmp_path, message, status, newline):
     message = message.replace("WARNING:", f"{status.upper()}:")
     body = "\n".join(f"│ │ {line} │ │" for line in message.splitlines())
     data = RA.replace("│ │ WARNING: Dependabot security updates are disabled.                   │ │", body)
     data = data.replace("[Warning] DependabotSecurityUpdates", f"[{status}] DependabotSecurityUpdates")
-    report = json.loads(invoke(tmp_path, data, "repoauditor").stdout)
+    report = json.loads(invoke(tmp_path, data, "repoauditor", newline=newline).stdout)
     issue = report["issues"][1]
     assert issue["status"] == "unavailable" and issue["original_status"] == status
     assert issue["evidence"] == message and issue["location"].startswith("lines:13-")
-    assert report["source"]["sha256"] == hashlib.sha256(data.encode()).hexdigest()
+    assert report["source"]["sha256"] == hashlib.sha256((tmp_path / "report.data").read_bytes()).hexdigest()
 
 
 METRICS = """╭─ Metrics ──────────────────╮
