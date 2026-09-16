@@ -1,0 +1,12 @@
+[
+  "poloclub/transformer-explainer",
+  "borglab/gtsam",
+  "vortexgpgpu/vortex",
+  "gt-tinker/qwerty",
+  "apache/airavata-custos",
+  "AI2Science/vizfold-foundation",
+  "psi4/psi4",
+  "MolSSI/QCSchema",
+  "slimgroup/InvertibleNetworks.jl",
+  "sharc-lab/Edge-MoE"
+]
