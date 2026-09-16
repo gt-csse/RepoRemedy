@@ -247,7 +247,10 @@ def main() -> int:
                 fail(f"Executable not found: {tool}")
             setattr(args, tool, str(Path(binary).resolve()))
             version = subprocess.check_output(  # noqa: S603 - resolved user-selected executable, no shell
-                [binary, "--version"], stderr=subprocess.STDOUT, timeout=30, text=True
+                [binary, "version" if tool == "scorecard" else "--version"],
+                stderr=subprocess.STDOUT,
+                timeout=30,
+                text=True,
             )
             tools[tool] = {
                 "executable": getattr(args, tool),

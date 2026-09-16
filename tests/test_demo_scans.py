@@ -25,7 +25,9 @@ def setup(tmp_path, monkeypatch):
         f"#!{sys.executable}\n"
         + """
 import json, os, pathlib, sys, time
-if '--version' in sys.argv:
+if sys.argv[1] in ('--version', 'version'):
+    expected = 'version' if pathlib.Path(__file__).name == 'scorecard' else '--version'
+    assert sys.argv[1] == expected
     print('fake 1.0'); sys.exit(0)
 if os.environ.get('FAKE_TIMEOUT'):
     time.sleep(60)
@@ -50,6 +52,9 @@ print(json.dumps({'repo': {'name': repo}, 'checks': [{'name': 'Example', 'score'
         encoding="utf-8",
     )
     tool.chmod(0o700)
+    scorecard = tmp_path / "scorecard"
+    scorecard.write_bytes(tool.read_bytes())
+    scorecard.chmod(0o700)
     source = tmp_path / "repos.json"
     source.write_text('["acme/demo", "acme/second"]', encoding="utf-8")
     output = tmp_path / "output"
@@ -66,7 +71,7 @@ print(json.dumps({'repo': {'name': repo}, 'checks': [{'name': 'Example', 'score'
             "--repoauditor",
             str(tool),
             "--scorecard",
-            str(tool),
+            str(scorecard),
         ],
     )
     return source, output
