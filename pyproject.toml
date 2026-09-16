@@ -13,7 +13,10 @@ authors = [
     { name = "Center for Scientific Software Engineering at Georgia Tech", email = "csse-technical@groups.gatech.edu" },
 ]
 requires-python = ">= 3.14"
-dependencies = []
+dependencies = [
+    "pydantic>=2.12,<3",
+    "typer>=0.27,<0.28",
+]
 classifiers = [
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
@@ -21,6 +24,9 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.14",
 ]
+
+[project.scripts]
+RepoRemedy = "RepoRemedy.cli:app"
 
 [project.license]
 text = "MIT"

@@ -1,0 +1,477 @@
+[
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v6.0.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": 5
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": null,
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "other/repo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "https://example.org/repo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": {}
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": [],
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": []
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": {}
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": true,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": "0",
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": -2,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 11,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": " ",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": null,
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": "oops"
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": "null"
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": "[]"
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": "NaN"
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": "{\"x\":1,\"x\":2}"
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "meta": {},
+      "scorecard": []
+    }
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": [
+      {
+        "repo": {
+          "name": "github.com/acme/demo",
+          "commit": "example-audited-revision"
+        },
+        "scorecard": {
+          "version": "v5.5.0"
+        },
+        "date": "2026-07-01T00:00:00Z",
+        "checks": [
+          {
+            "name": "Security-Policy",
+            "score": 0,
+            "reason": "Synthetic example: policy missing",
+            "details": [
+              "No recognized policy found"
+            ]
+          }
+        ]
+      },
+      {
+        "repo": {
+          "name": "github.com/acme/demo",
+          "commit": "example-audited-revision"
+        },
+        "scorecard": {
+          "version": "v5.5.0"
+        },
+        "date": "2026-07-01T00:00:00Z",
+        "checks": [
+          {
+            "name": "Security-Policy",
+            "score": 0,
+            "reason": "Synthetic example: policy missing",
+            "details": [
+              "No recognized policy found"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": {
+      "repo": {
+        "name": "github.com/acme/demo",
+        "commit": "example-audited-revision"
+      },
+      "scorecard": {
+        "version": "v5.5.0"
+      },
+      "date": "2026-07-01T00:00:00Z",
+      "checks": [
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        },
+        {
+          "name": "Security-Policy",
+          "score": 0,
+          "reason": "Synthetic example: policy missing",
+          "details": [
+            "No recognized policy found"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "repoauditor",
+    "data": ""
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ CommunityStandards ──────────────────────────────────────────────────────╮\n│ ╭─ [Error] SecurityPolicy ───────────────────────────────────────────────╮ │\n│ │ ERROR: A security policy was not found.                               │ │\n│ │ Resolution                                                           │ │\n│ │ ----------                                                           │ │\n│ │ Create a security policy in .github/SECURITY.md or SECURITY.md.        │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n│ ╭─ [Success] LicenseFile ───────────────────────────────────────────────╮ │\n│ │ SUCCESS: LICENSE exists.                                             │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n╭─ GitHub ─────────────────────────────────────────────────────────────────╮\n│ ╭─ [Warning] DependabotSecurityUpdates ─────────────────────────────────╮ │\n│ │ WARNING: Dependabot security updates are disabled.                   │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n╭─ CommunityStandards ──────────────────────────────────────────────────────╮\n│ ╭─ [Error] SecurityPolicy ───────────────────────────────────────────────╮ │\n│ │ ERROR: A security policy was not found.                               │ │\n│ │ Resolution                                                           │ │\n│ │ ----------                                                           │ │\n│ │ Create a security policy in .github/SECURITY.md or SECURITY.md.        │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n│ ╭─ [Success] LicenseFile ───────────────────────────────────────────────╮ │\n│ │ SUCCESS: LICENSE exists.                                             │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n╭─ GitHub ─────────────────────────────────────────────────────────────────╮\n│ ╭─ [Warning] DependabotSecurityUpdates ─────────────────────────────────╮ │\n│ │ WARNING: Dependabot security updates are disabled.                   │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ CommunityStandards ──────────────────────────────────────────────────────╮\n│ ╭─ [Failed] SecurityPolicy ───────────────────────────────────────────────╮ │\n│ │ ERROR: A security policy was not found.                               │ │\n│ │ Resolution                                                           │ │\n│ │ ----------                                                           │ │\n│ │ Create a security policy in .github/SECURITY.md or SECURITY.md.        │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n│ ╭─ [Success] LicenseFile ───────────────────────────────────────────────╮ │\n│ │ SUCCESS: LICENSE exists.                                             │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n╭─ GitHub ─────────────────────────────────────────────────────────────────╮\n│ ╭─ [Warning] DependabotSecurityUpdates ─────────────────────────────────╮ │\n│ │ WARNING: Dependabot security updates are disabled.                   │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ [Error] Check ─╮\n│ missing │"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ [Error] Check ─╮\n"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ [Error] Check ─╮\n╰──╯"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ [Error] Check ─╮\n\n╰──╯"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ [Error] Check ─╮\n╰──bad"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ CommunityStandards ──────────────────────────────────────────────────────╮\n│ ╭─ [Error] SecurityPolicy ───────────────────────────────────────────────╮ │\n╭ │ ERROR: A security policy was not found.                               │ │\n│ │ Resolution                                                           │ │\n│ │ ----------                                                           │ │\n│ │ Create a security policy in .github/SECURITY.md or SECURITY.md.        │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n│ ╭─ [Success] LicenseFile ───────────────────────────────────────────────╮ │\n│ │ SUCCESS: LICENSE exists.                                             │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n╭─ GitHub ─────────────────────────────────────────────────────────────────╮\n│ ╭─ [Warning] DependabotSecurityUpdates ─────────────────────────────────╮ │\n│ │ WARNING: Dependabot security updates are disabled.                   │ │\n│ ╰──────────────────────────────────────────────────────────────────────╯ │\n╰──────────────────────────────────────────────────────────────────────────╯\n"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "Metrics\nSuccessful: 2\nWarnings: 1 (10%)\nErrors: 0 (0%)"
+  },
+  {
+    "kind": "repoauditor",
+    "data": "╭─ [Error] Check ─╮\n│ truncated body\n╰──╯"
+  },
+  {
+    "kind": "ossf-scorecard",
+    "data": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[0]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+  }
+]
