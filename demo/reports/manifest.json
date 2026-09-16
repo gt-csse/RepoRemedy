@@ -1,0 +1,1257 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-15T21:31:44+00:00",
+  "tools": {
+    "repoauditor": {
+      "version": "0.0.0",
+      "source": "https://github.com/gt-csse/RepoAuditor",
+      "source_revision": "c682a78a76ff8a6fbdc103cc6f386b7fc09dfc67",
+      "modules": [
+        "GitHub",
+        "CommunityStandards",
+        "ScientificSoftware"
+      ],
+      "source_tree": "clean"
+    },
+    "scorecard": {
+      "version": "v5.5.0",
+      "source": "https://github.com/ossf/scorecard",
+      "source_revision": "c395761df6afe1a69e476bc60a013a94bcbc153f",
+      "distribution": "scorecard_5.5.0_darwin_arm64.tar.gz",
+      "archive_sha256": "bac6371a4f810d6bdd0b65d63c3311906bdfe3ba0d76a5ea743ce24ced170fcf",
+      "default_checks": 18,
+      "show_details": true
+    }
+  },
+  "notes": [
+    "Reports are unmodified tool output. Each scan records its own authentication mode, timestamps, command, exit code and SHA-256.",
+    "Scorecard used the ketanbj GitHub credential. RepoAuditor first used that credential for GitHub settings and anonymous clones for public repository files; authenticated attempts that failed on inaccessible classic branch-protection settings were retried in anonymous mode and recorded.",
+    "RepoAuditor exit 255 indicates audit findings when a complete report is produced; it does not by itself indicate a failed scan.",
+    "Unavailable settings and Scorecard scores of -1 are missing evidence, not confirmed defects. Low scores are candidate gaps requiring review.",
+    "Reports capture live repository state at different times. RepoAuditor reads live settings and separately clones the default branch; the scans are not an atomic snapshot."
+  ],
+  "repositories": [
+    {
+      "repository": "poloclub/transformer-explainer",
+      "url": "https://github.com/poloclub/transformer-explainer",
+      "default_branch": "main",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:19:34+00:00",
+        "finished_at": "2026-09-15T21:31:23+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/poloclub/transformer-explainer",
+          "--GitHub-branch",
+          "main",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/poloclub/transformer-explainer",
+          "--CommunityStandards-branch",
+          "main",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/poloclub/transformer-explainer",
+          "--ScientificSoftware-branch",
+          "main",
+          "--GitHub-pat",
+          "<private-token-file>",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "poloclub/transformer-explainer/repoauditor.txt",
+        "log": "poloclub/transformer-explainer/repoauditor.log",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "sha256": "6c123dadccea8120d105866a2090f3a2979adbf8fb0be802a8d91d5ba7206a4f",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 29,
+          "statuses": {
+            "error": 18,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:19:34+00:00",
+        "finished_at": "2026-09-15T21:22:14+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/poloclub/transformer-explainer",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "poloclub/transformer-explainer/scorecard.json",
+        "log": "poloclub/transformer-explainer/scorecard.log",
+        "sha256": "d7da6c075a8b6a157fda7c1085a11a29ce8c71242704815a6c9ab29f47651bb1",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 13,
+          "statuses": {
+            "gap": 11,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "borglab/gtsam",
+      "url": "https://github.com/borglab/gtsam",
+      "default_branch": "develop",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:24:04+00:00",
+        "finished_at": "2026-09-15T21:25:38+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "anonymous",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/borglab/gtsam",
+          "--GitHub-branch",
+          "develop",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/borglab/gtsam",
+          "--CommunityStandards-branch",
+          "develop",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/borglab/gtsam",
+          "--ScientificSoftware-branch",
+          "develop",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "borglab/gtsam/repoauditor.txt",
+        "log": "borglab/gtsam/repoauditor.log",
+        "authenticated_attempt": {
+          "started_at": "2026-09-15T21:19:34+00:00",
+          "finished_at": "2026-09-15T21:21:02+00:00",
+          "exit_code": 133,
+          "timed_out": false,
+          "authentication": "ketanbj",
+          "command": [
+            "RepoAuditor",
+            "--include",
+            "GitHub",
+            "--GitHub-url",
+            "https://github.com/borglab/gtsam",
+            "--GitHub-branch",
+            "develop",
+            "--include",
+            "CommunityStandards",
+            "--CommunityStandards-url",
+            "https://github.com/borglab/gtsam",
+            "--CommunityStandards-branch",
+            "develop",
+            "--include",
+            "ScientificSoftware",
+            "--ScientificSoftware-url",
+            "https://github.com/borglab/gtsam",
+            "--ScientificSoftware-branch",
+            "develop",
+            "--GitHub-pat",
+            "<private-token-file>",
+            "--output",
+            "repoauditor.txt"
+          ],
+          "report": null,
+          "log": "borglab/gtsam/repoauditor-authenticated-attempt.log",
+          "modules": [
+            "GitHub",
+            "CommunityStandards",
+            "ScientificSoftware"
+          ],
+          "reason": "Authenticated classic branch-protection lookup returned 404; settings are not accessible to this account.",
+          "errors": [
+            "404 Client Error: Not Found for url: https://api.github.com/repos/borglab/gtsam/branches/develop/protection"
+          ]
+        },
+        "sha256": "42b6ad98afeb3b8a244beaa1adcf63bedc406d7daca0924a6f690e035daaf1ff",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 32,
+          "statuses": {
+            "error": 21,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:21:02+00:00",
+        "finished_at": "2026-09-15T21:22:11+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/borglab/gtsam",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "borglab/gtsam/scorecard.json",
+        "log": "borglab/gtsam/scorecard.log",
+        "sha256": "19edc35d6fc5dd9937e414bd2058a7abb15dff451822a2a0bdc469a97d85c594",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 11,
+          "statuses": {
+            "gap": 10,
+            "unavailable": 1
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "vortexgpgpu/vortex",
+      "url": "https://github.com/vortexgpgpu/vortex",
+      "default_branch": "master",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:28:04+00:00",
+        "finished_at": "2026-09-15T21:31:02+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "anonymous",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/vortexgpgpu/vortex",
+          "--GitHub-branch",
+          "master",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/vortexgpgpu/vortex",
+          "--CommunityStandards-branch",
+          "master",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/vortexgpgpu/vortex",
+          "--ScientificSoftware-branch",
+          "master",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "vortexgpgpu/vortex/repoauditor.txt",
+        "log": "vortexgpgpu/vortex/repoauditor.log",
+        "authenticated_attempt": {
+          "started_at": "2026-09-15T21:22:11+00:00",
+          "finished_at": "2026-09-15T21:26:37+00:00",
+          "exit_code": 133,
+          "timed_out": false,
+          "authentication": "ketanbj",
+          "command": [
+            "RepoAuditor",
+            "--include",
+            "GitHub",
+            "--GitHub-url",
+            "https://github.com/vortexgpgpu/vortex",
+            "--GitHub-branch",
+            "master",
+            "--include",
+            "CommunityStandards",
+            "--CommunityStandards-url",
+            "https://github.com/vortexgpgpu/vortex",
+            "--CommunityStandards-branch",
+            "master",
+            "--include",
+            "ScientificSoftware",
+            "--ScientificSoftware-url",
+            "https://github.com/vortexgpgpu/vortex",
+            "--ScientificSoftware-branch",
+            "master",
+            "--GitHub-pat",
+            "<private-token-file>",
+            "--output",
+            "repoauditor.txt"
+          ],
+          "report": null,
+          "log": "vortexgpgpu/vortex/repoauditor-authenticated-attempt.log",
+          "modules": [
+            "GitHub",
+            "CommunityStandards",
+            "ScientificSoftware"
+          ],
+          "reason": "Authenticated classic branch-protection lookup returned 404; settings are not accessible to this account.",
+          "errors": [
+            "404 Client Error: Not Found for url: https://api.github.com/repos/vortexgpgpu/vortex/branches/master/protection"
+          ]
+        },
+        "sha256": "91b496ce258e5f57fe226c0f16a7f80d7b9e007f7ba8a05b9bf64f4eb436bd9d",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 33,
+          "statuses": {
+            "error": 22,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:22:14+00:00",
+        "finished_at": "2026-09-15T21:23:10+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/vortexgpgpu/vortex",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "vortexgpgpu/vortex/scorecard.json",
+        "log": "vortexgpgpu/vortex/scorecard.log",
+        "sha256": "5b11f75e99e1a71b6300c0eb0cd4d71aea3823fba06bfb16d2fb49fc0aea234d",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 13,
+          "statuses": {
+            "gap": 11,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "gt-tinker/qwerty",
+      "url": "https://github.com/gt-tinker/qwerty",
+      "default_branch": "main",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:23:10+00:00",
+        "finished_at": "2026-09-15T21:23:16+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/gt-tinker/qwerty",
+          "--GitHub-branch",
+          "main",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/gt-tinker/qwerty",
+          "--CommunityStandards-branch",
+          "main",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/gt-tinker/qwerty",
+          "--ScientificSoftware-branch",
+          "main",
+          "--GitHub-pat",
+          "<private-token-file>",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "gt-tinker/qwerty/repoauditor.txt",
+        "log": "gt-tinker/qwerty/repoauditor.log",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "sha256": "1d61b37c5f5499204c153db9a9d83ee1281526600d8c69fb8aa2c6767bf91b02",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 25,
+          "statuses": {
+            "error": 14,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:23:16+00:00",
+        "finished_at": "2026-09-15T21:23:29+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/gt-tinker/qwerty",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "gt-tinker/qwerty/scorecard.json",
+        "log": "gt-tinker/qwerty/scorecard.log",
+        "sha256": "e06ee59e3382fedd7a280d98cbc305caf84d7bce0f1e452082de5eb3326570ec",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 12,
+          "statuses": {
+            "gap": 10,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "CI-Tests",
+            "reason": "no pull request found"
+          },
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "apache/airavata-custos",
+      "url": "https://github.com/apache/airavata-custos",
+      "default_branch": "master",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:23:29+00:00",
+        "finished_at": "2026-09-15T21:24:04+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/apache/airavata-custos",
+          "--GitHub-branch",
+          "master",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/apache/airavata-custos",
+          "--CommunityStandards-branch",
+          "master",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/apache/airavata-custos",
+          "--ScientificSoftware-branch",
+          "master",
+          "--GitHub-pat",
+          "<private-token-file>",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "apache/airavata-custos/repoauditor.txt",
+        "log": "apache/airavata-custos/repoauditor.log",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "sha256": "988944cbaf8acf533fad4b605e8f615b288639a80ee3feba748f54196798982f",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 31,
+          "statuses": {
+            "error": 20,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:24:04+00:00",
+        "finished_at": "2026-09-15T21:24:42+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/apache/airavata-custos",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "apache/airavata-custos/scorecard.json",
+        "log": "apache/airavata-custos/scorecard.log",
+        "sha256": "8dd5f88020850d6dccd603465bf924fb6b16cba0fc4a95ba5d7c90b09ce9b6df",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 11,
+          "statuses": {
+            "gap": 9,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "AI2Science/vizfold-foundation",
+      "url": "https://github.com/AI2Science/vizfold-foundation",
+      "default_branch": "main",
+      "resolved_from": "https://vizfold.github.io/",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:24:42+00:00",
+        "finished_at": "2026-09-15T21:25:27+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/AI2Science/vizfold-foundation",
+          "--GitHub-branch",
+          "main",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/AI2Science/vizfold-foundation",
+          "--CommunityStandards-branch",
+          "main",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/AI2Science/vizfold-foundation",
+          "--ScientificSoftware-branch",
+          "main",
+          "--GitHub-pat",
+          "<private-token-file>",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "AI2Science/vizfold-foundation/repoauditor.txt",
+        "log": "AI2Science/vizfold-foundation/repoauditor.log",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "sha256": "6c21a3e5e414d53e37177533ea2fff608bfe1e47c5214a7e1a7c27dea96969ad",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 33,
+          "statuses": {
+            "error": 22,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:25:27+00:00",
+        "finished_at": "2026-09-15T21:25:54+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/AI2Science/vizfold-foundation",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "AI2Science/vizfold-foundation/scorecard.json",
+        "log": "AI2Science/vizfold-foundation/scorecard.log",
+        "sha256": "f0db890fa45c220d3835878b726c22cd1d090cb8e2089e98f1a16c7331a42cd0",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 12,
+          "statuses": {
+            "gap": 11,
+            "unavailable": 1
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "psi4/psi4",
+      "url": "https://github.com/psi4/psi4",
+      "default_branch": "master",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:28:04+00:00",
+        "finished_at": "2026-09-15T21:29:25+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "anonymous",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/psi4/psi4",
+          "--GitHub-branch",
+          "master",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/psi4/psi4",
+          "--CommunityStandards-branch",
+          "master",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/psi4/psi4",
+          "--ScientificSoftware-branch",
+          "master",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "psi4/psi4/repoauditor.txt",
+        "log": "psi4/psi4/repoauditor.log",
+        "authenticated_attempt": {
+          "started_at": "2026-09-15T21:25:54+00:00",
+          "finished_at": "2026-09-15T21:27:24+00:00",
+          "exit_code": 133,
+          "timed_out": false,
+          "authentication": "ketanbj",
+          "command": [
+            "RepoAuditor",
+            "--include",
+            "GitHub",
+            "--GitHub-url",
+            "https://github.com/psi4/psi4",
+            "--GitHub-branch",
+            "master",
+            "--include",
+            "CommunityStandards",
+            "--CommunityStandards-url",
+            "https://github.com/psi4/psi4",
+            "--CommunityStandards-branch",
+            "master",
+            "--include",
+            "ScientificSoftware",
+            "--ScientificSoftware-url",
+            "https://github.com/psi4/psi4",
+            "--ScientificSoftware-branch",
+            "master",
+            "--GitHub-pat",
+            "<private-token-file>",
+            "--output",
+            "repoauditor.txt"
+          ],
+          "report": null,
+          "log": "psi4/psi4/repoauditor-authenticated-attempt.log",
+          "modules": [
+            "GitHub",
+            "CommunityStandards",
+            "ScientificSoftware"
+          ],
+          "reason": "Authenticated classic branch-protection lookup returned 404; settings are not accessible to this account.",
+          "errors": [
+            "404 Client Error: Not Found for url: https://api.github.com/repos/psi4/psi4/branches/master/protection"
+          ]
+        },
+        "sha256": "7c6cfe01a91c7706cc5fd217acf8802d88b75589eab96ec3bc076ff462ff559d",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 31,
+          "statuses": {
+            "error": 20,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:26:37+00:00",
+        "finished_at": "2026-09-15T21:27:34+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/psi4/psi4",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "psi4/psi4/scorecard.json",
+        "log": "psi4/psi4/scorecard.log",
+        "sha256": "eb6440d074968b31e92cdea82bc885500548160ee51add6dd74f1de3230828cb",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 11,
+          "statuses": {
+            "gap": 9,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "MolSSI/QCSchema",
+      "url": "https://github.com/MolSSI/QCSchema",
+      "default_branch": "master",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:29:25+00:00",
+        "finished_at": "2026-09-15T21:29:29+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "anonymous",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/MolSSI/QCSchema",
+          "--GitHub-branch",
+          "master",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/MolSSI/QCSchema",
+          "--CommunityStandards-branch",
+          "master",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/MolSSI/QCSchema",
+          "--ScientificSoftware-branch",
+          "master",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "MolSSI/QCSchema/repoauditor.txt",
+        "log": "MolSSI/QCSchema/repoauditor.log",
+        "authenticated_attempt": {
+          "started_at": "2026-09-15T21:27:24+00:00",
+          "finished_at": "2026-09-15T21:27:29+00:00",
+          "exit_code": 133,
+          "timed_out": false,
+          "authentication": "ketanbj",
+          "command": [
+            "RepoAuditor",
+            "--include",
+            "GitHub",
+            "--GitHub-url",
+            "https://github.com/MolSSI/QCSchema",
+            "--GitHub-branch",
+            "master",
+            "--include",
+            "CommunityStandards",
+            "--CommunityStandards-url",
+            "https://github.com/MolSSI/QCSchema",
+            "--CommunityStandards-branch",
+            "master",
+            "--include",
+            "ScientificSoftware",
+            "--ScientificSoftware-url",
+            "https://github.com/MolSSI/QCSchema",
+            "--ScientificSoftware-branch",
+            "master",
+            "--GitHub-pat",
+            "<private-token-file>",
+            "--output",
+            "repoauditor.txt"
+          ],
+          "report": null,
+          "log": "MolSSI/QCSchema/repoauditor-authenticated-attempt.log",
+          "modules": [
+            "GitHub",
+            "CommunityStandards",
+            "ScientificSoftware"
+          ],
+          "reason": "Authenticated classic branch-protection lookup returned 404; settings are not accessible to this account.",
+          "errors": [
+            "404 Client Error: Not Found for url: https://api.github.com/repos/MolSSI/QCSchema/branches/master/protection"
+          ]
+        },
+        "sha256": "180dd54df2eaccc5287218fc7a282184402cf73439c7e91db503a5e2e3c96359",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 31,
+          "statuses": {
+            "error": 20,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:27:29+00:00",
+        "finished_at": "2026-09-15T21:27:52+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/MolSSI/QCSchema",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "MolSSI/QCSchema/scorecard.json",
+        "log": "MolSSI/QCSchema/scorecard.log",
+        "sha256": "4fc6a1487df6e98ad1456ce384d9adaf0fe16d3e5befd80f1914afd5f7d7a166",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 13,
+          "statuses": {
+            "gap": 11,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "slimgroup/InvertibleNetworks.jl",
+      "url": "https://github.com/slimgroup/InvertibleNetworks.jl",
+      "default_branch": "master",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:27:34+00:00",
+        "finished_at": "2026-09-15T21:27:39+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/slimgroup/InvertibleNetworks.jl",
+          "--GitHub-branch",
+          "master",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/slimgroup/InvertibleNetworks.jl",
+          "--CommunityStandards-branch",
+          "master",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/slimgroup/InvertibleNetworks.jl",
+          "--ScientificSoftware-branch",
+          "master",
+          "--GitHub-pat",
+          "<private-token-file>",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "slimgroup/InvertibleNetworks.jl/repoauditor.txt",
+        "log": "slimgroup/InvertibleNetworks.jl/repoauditor.log",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "sha256": "46e67cd24ae4178e28387e469c09df112bdb90fd5135f43ba27aea6191bab7dc",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 31,
+          "statuses": {
+            "error": 20,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:27:39+00:00",
+        "finished_at": "2026-09-15T21:27:57+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/slimgroup/InvertibleNetworks.jl",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "slimgroup/InvertibleNetworks.jl/scorecard.json",
+        "log": "slimgroup/InvertibleNetworks.jl/scorecard.log",
+        "sha256": "583e37630949bec131a2d4cf3212578e2fcfe4906000fe2e83d048bd53ac88d4",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 13,
+          "statuses": {
+            "gap": 11,
+            "unavailable": 2
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    },
+    {
+      "repository": "sharc-lab/Edge-MoE",
+      "url": "https://github.com/sharc-lab/Edge-MoE",
+      "default_branch": "main",
+      "repoauditor": {
+        "started_at": "2026-09-15T21:27:52+00:00",
+        "finished_at": "2026-09-15T21:29:18+00:00",
+        "exit_code": 255,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "RepoAuditor",
+          "--include",
+          "GitHub",
+          "--GitHub-url",
+          "https://github.com/sharc-lab/Edge-MoE",
+          "--GitHub-branch",
+          "main",
+          "--include",
+          "CommunityStandards",
+          "--CommunityStandards-url",
+          "https://github.com/sharc-lab/Edge-MoE",
+          "--CommunityStandards-branch",
+          "main",
+          "--include",
+          "ScientificSoftware",
+          "--ScientificSoftware-url",
+          "https://github.com/sharc-lab/Edge-MoE",
+          "--ScientificSoftware-branch",
+          "main",
+          "--GitHub-pat",
+          "<private-token-file>",
+          "--output",
+          "repoauditor.txt"
+        ],
+        "report": "sharc-lab/Edge-MoE/repoauditor.txt",
+        "log": "sharc-lab/Edge-MoE/repoauditor.log",
+        "modules": [
+          "GitHub",
+          "CommunityStandards",
+          "ScientificSoftware"
+        ],
+        "sha256": "3bb2af418acd99ae0f244859b03a966ba69cf66c48e50eb17c1db07d8c565556",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 34,
+          "statuses": {
+            "error": 23,
+            "warning": 11
+          }
+        },
+        "unavailable_checks": [
+          "MergeCommit",
+          "MergeCommitMessage",
+          "SquashCommitMerge",
+          "SquashMergeCommitMessage",
+          "RebaseMergeCommit",
+          "SuggestUpdatingPullRequestBranches",
+          "AutoMerge",
+          "DeleteHeadBranches",
+          "DependabotSecurityUpdates",
+          "SecretScanning",
+          "SecretScanningPushProtection"
+        ]
+      },
+      "scorecard": {
+        "started_at": "2026-09-15T21:27:57+00:00",
+        "finished_at": "2026-09-15T21:28:41+00:00",
+        "exit_code": 0,
+        "timed_out": false,
+        "authentication": "ketanbj",
+        "command": [
+          "scorecard",
+          "--repo=github.com/sharc-lab/Edge-MoE",
+          "--format=json",
+          "--show-details"
+        ],
+        "report": "sharc-lab/Edge-MoE/scorecard.json",
+        "log": "sharc-lab/Edge-MoE/scorecard.log",
+        "sha256": "1489bc00a28e9c6fd32d03e2230db42e16d0d627099fa49b681ee5db4b5b1cf6",
+        "status": "generated_with_unavailable_evidence",
+        "reader_validation": {
+          "status": "passed",
+          "findings": 16,
+          "statuses": {
+            "gap": 10,
+            "unavailable": 6
+          }
+        },
+        "unavailable_checks": [
+          {
+            "check": "CI-Tests",
+            "reason": "no pull request found"
+          },
+          {
+            "check": "Dangerous-Workflow",
+            "reason": "no workflows found"
+          },
+          {
+            "check": "Packaging",
+            "reason": "packaging workflow not detected"
+          },
+          {
+            "check": "Pinned-Dependencies",
+            "reason": "no dependencies found"
+          },
+          {
+            "check": "Signed-Releases",
+            "reason": "no releases found"
+          },
+          {
+            "check": "Token-Permissions",
+            "reason": "No tokens found"
+          }
+        ],
+        "check_count": 18,
+        "check_errors": []
+      }
+    }
+  ],
+  "reader_validation": {
+    "branch": "feat/report-readers-cli",
+    "source_revision": "d4c8ec8e423338ff1d2c1b4dbc2ed4203f5c8b7e",
+    "report_types": [
+      "repoauditor",
+      "ossf-scorecard"
+    ],
+    "reports_passed": 20
+  }
+}
