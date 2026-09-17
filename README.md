@@ -30,7 +30,21 @@ open-source repositories. It will turn RepoAuditor text and OpenSSF Scorecard JS
 findings into reviewable issues and pull requests.
 
 ### How to use `RepoRemedy`
-TODO: Complete this section
+Read an existing report and write normalized findings and source provenance as JSON:
+
+```shell
+RepoRemedy inspect report.json --report-type ossf-scorecard --repo acme/demo
+RepoRemedy inspect report.txt --report-type repoauditor --repo https://github.gatech.edu/sse-center/sse-resources
+```
+
+Use `RepoRemedy inspect --help` for inspection options and `RepoRemedy --version` for the installed
+version. `OWNER/REPO` means GitHub.com; use an HTTPS URL or `HOST/OWNER/REPO` for
+GitHub Enterprise. Enterprise hosts are retained in the output and Scorecard scan
+matching, including non-default HTTPS ports.
+
+The `inspect` command reads reports offline. A separate `publish` command is planned
+for publishing reviewed proposals as issues or draft PRs, with explicit confirmation.
+See [the design](doc/design.md) for the planned workflow.
 
 <!-- Content below this delimiter will be copied to the generated README.md file. DO NOT REMOVE THIS COMMENT, as it will cause regeneration to fail. -->
 
