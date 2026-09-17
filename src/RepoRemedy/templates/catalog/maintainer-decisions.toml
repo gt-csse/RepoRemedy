@@ -1,0 +1,103 @@
+schema_version = 3
+
+[remedies."ossf-cii-best-practices"]
+sources = { OSSF = ["CII-Best-Practices"] }
+response = "Assign an owner to assess badge criteria and address evidenced gaps."
+
+[remedies."ossf-cii-best-practices".issue]
+title = "Best-practices badge evidence is missing or below the desired level in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ossf-contributors"]
+sources = { OSSF = ["Contributors"] }
+response = "Review participation barriers and improve onboarding in line with maintainer goals."
+
+[remedies."ossf-contributors".issue]
+title = "Contributor participation evidence needs review in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ossf-license"]
+sources = { OSSF = ["License"] }
+response = "Resolve absent or unrecognized licensing using maintainer-approved content."
+
+[remedies."ossf-license".issue]
+title = "License evidence is missing or not recognized in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ossf-maintained"]
+sources = { OSSF = ["Maintained"] }
+response = "Agree an honest support, ownership, continuity or archival plan with maintainers."
+
+[remedies."ossf-maintained".issue]
+title = "Maintenance activity indicates a possible continuity gap in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-license"]
+sources = { RA = ["License"] }
+response = "Reconcile license detection with project intent; change license content only after maintainer approval."
+
+[remedies."ra-license".issue]
+title = "Detected license does not match the configured requirement in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-private"]
+sources = { RA = ["Private"] }
+response = "Confirm intended visibility with the owner; review access and exposure before any change."
+
+[remedies."ra-private".issue]
+title = "Repository visibility differs from the configured requirement in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]

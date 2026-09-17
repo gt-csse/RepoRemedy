@@ -131,6 +131,133 @@ The root callback preserves this command structure while providing `--version`.
 All modes use the same review and publication flow. Show what context is sent to
 hosted models; keep credentials out of artifacts and treat generated content as untrusted.
 
+## Non-LLM templates
+
+See the [catalog README](../src/RepoRemedy/templates/catalog/README.md) for a guide
+to the topic files, definition fields and contributor workflow.
+
+Each [catalog response](catalog.md) links to a remedy definition under
+[`src/RepoRemedy/templates/`](../src/RepoRemedy/templates/). Related checks may share
+a definition, but matching always uses both origin (`RA`/`OSSF`) and exact identifier.
+Definitions select from five shared issue/PR body templates:
+
+| Shared body | Output | Current routes | Purpose |
+| --- | --- | --- | --- |
+| `settings-issue.md` | Issue | 40 | Request an approved setting change and verification. |
+| `engineering-issue.md` | Issue | 11 | Describe affected components and implementation work. |
+| `decision-issue.md` | Issue | 9 | Request a maintainer decision about policy or commitments. |
+| `documentation-issue.md` | Issue | 8 | Request documentation/configuration after checking existing files. |
+| `create-files-pr.md` | Draft PR | 9 | Propose new files using approved content and creation guards. |
+
+```text
+templates/
+  catalog/
+    documentation.toml
+    repository-settings.toml
+    branch-protection.toml
+    engineering.toml
+    maintainer-decisions.toml
+  bodies/
+    settings-issue.md
+    engineering-issue.md
+    decision-issue.md
+    documentation-issue.md
+    create-files-pr.md
+  files/
+    SECURITY.md
+    CONTRIBUTING.md
+    ...eight other proposed-file assets
+```
+
+Catalogs group related remedies by topic; body types determine the presentation of
+an issue or PR. They are independent: a documentation remedy can request a maintainer
+decision and also offer a file-creation PR.
+
+| Topic catalog | Definitions |
+| --- | --- |
+| [Documentation](../src/RepoRemedy/templates/catalog/documentation.toml) | 9 |
+| [Repository settings](../src/RepoRemedy/templates/catalog/repository-settings.toml) | 20 |
+| [Branch protection](../src/RepoRemedy/templates/catalog/branch-protection.toml) | 21 |
+| [Engineering](../src/RepoRemedy/templates/catalog/engineering.toml) | 12 |
+| [Maintainer decisions](../src/RepoRemedy/templates/catalog/maintainer-decisions.toml) | 6 |
+
+The `security-policy` definition in the documentation catalog serves both auditors.
+The `ra-description` definition in the repository-settings catalog produces
+administrator instructions. There are 68 remedy definitions covering all 69 catalog
+rows; nine define an optional file-creation PR. The five shared bodies replace 77
+per-remedy body files. Ten proposed-file assets retain their distinct formats and
+content. These assets do not yet implement a renderer.
+
+**Catalog contract (schema version 3):** each topic file declares `schema_version = 3`
+and a `remedies` table keyed by stable remedy ID. IDs must be unique across all topic
+files; moving a definition between topics does not change its identity. Each
+`[remedies."id"]` table declares exact `sources`, literal remedy-specific `response`
+text and an `issue` route. For example:
+
+```toml
+schema_version = 3
+
+[remedies."ra-contributing"]
+sources = { RA = ["Contributing"] }
+response = "Document contribution setup, tests and review expectations; verify the commands."
+
+[remedies."ra-contributing".issue]
+title = "Contribution guidance is missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository", "origin", "check", "evidence", "target",
+    "observed_state", "verification_steps",
+]
+```
+
+An optional `pr` route declares a literal `change_summary`, file paths and guards.
+Each route specifies a title, shared `body` filename and the full list of runtime
+`required_inputs`. Resolve body names only within `templates/bodies/`; issues select
+one of the four issue bodies and PRs select `create-files-pr.md`. Resolve PR file
+`template` names only within `templates/files/`; each file's `path` remains relative
+to the target repository. Topic catalogs contain references, never copies of bodies
+or proposed-file assets.
+
+Bodies and file content use `${name}` placeholders; `$$` represents a literal dollar.
+Use simple, single-pass substitution with no expressions or executable template logic.
+Supply `response` from the remedy definition and, for PRs, `change_summary` from its route,
+together with the required runtime inputs. These fixed fields are not runtime inputs
+and cannot be overridden by them. They are inserted literally, without expanding
+placeholder-like text inside them. The remaining placeholders across the title,
+shared body and proposed files must exactly match `required_inputs`.
+Read packaged assets with `importlib.resources` so installed tools can use them.
+
+**Customization:** derive repository identity, check and evidence from the report;
+read current target state from repository context. Obtain approved settings, contacts,
+license text, project instructions and verification steps from maintainer inputs.
+Require every declared input, reject unexpected placeholders, and validate the source
+mapping. Preserve missing inputs as `needs-input`; never publish incomplete content.
+Substituted values are data and must not be interpreted again as template instructions.
+
+**Preview and publication:** save customized output under `runs/<run>/<repository>/`,
+leaving packaged templates unchanged. Skip resolved findings and reject unavailable,
+ambiguous or stale evidence. Show issue text or proposed file diffs for review before
+explicit publication. Revalidate target state and reconcile publication receipts on retry.
+
+**PR guards:** `confirmed_gap` means current evidence supports the change;
+`target_absent` requires the destination not to exist; `no_equivalent_file` requires
+checking supported alternate locations; `approved_inputs` requires maintainer-owned
+content to be approved. All four must pass. Paths must stay inside the target
+repository, and source templates must stay inside `templates/files/`.
+Existing-file edits need a separate editing strategy; these templates never overwrite them.
+Configuration templates such as CODEOWNERS and citation metadata also need format
+validation before publication. Engineering and policy issues remain instructions
+until a suitable implementation exists. A PR template is not evidence that checks ran.
+
+**Adding a remedy:** add a uniquely keyed entry to the relevant topic catalog,
+select existing shared bodies, write the specific
+response and declare every runtime input and source identifier. Add proposed-file
+assets only when needed, link the definition from the catalog, and run the asset tests.
+Those tests check unique IDs across topics, shared-body selection, catalog links,
+mappings, inputs and paths; later renderer
+tests must cover applicability, validation, already-correct/unavailable cases and
+package loading. Keep catalog links relative.
+
 ## Scope and delivery
 
 Start with documentation remedies and administrator instructions. RepoRemedy does not
