@@ -1,0 +1,216 @@
+schema_version = 3
+
+[remedies."ossf-binary-artifacts"]
+sources = { OSSF = ["Binary-Artifacts"] }
+response = "Review binary provenance and usage; validate replacements before removing needed artifacts."
+
+[remedies."ossf-binary-artifacts".issue]
+title = "Binary artifacts in the repository need review in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-ci-tests"]
+sources = { OSSF = ["CI-Tests"] }
+response = "Establish useful tests and reproducible CI execution; investigate detector mismatches."
+
+[remedies."ossf-ci-tests".issue]
+title = "Successful CI tests are insufficient or not detected in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-dangerous-workflow"]
+sources = { OSSF = ["Dangerous-Workflow"] }
+response = "Repair the identified workflow pattern and validate its trigger, permissions and trust boundaries."
+
+[remedies."ossf-dangerous-workflow".issue]
+title = "Workflow contains a reported dangerous pattern in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-dependency-update-tool"]
+sources = { OSSF = ["Dependency-Update-Tool"] }
+response = "Configure an appropriate updater for actual ecosystems and directories; verify a representative update."
+
+[remedies."ossf-dependency-update-tool".issue]
+title = "Dependency-update tooling is missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ossf-fuzzing"]
+sources = { OSSF = ["Fuzzing"] }
+response = "Choose useful fuzz targets, maintainable harnesses and owners; demonstrate execution and failure reporting."
+
+[remedies."ossf-fuzzing".issue]
+title = "Fuzzing coverage is missing or not detected in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-packaging"]
+sources = { OSSF = ["Packaging"] }
+response = "Establish reproducible package publication where appropriate and validate the resulting artifacts."
+
+[remedies."ossf-packaging".issue]
+title = "Package-publication evidence is missing or incomplete in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-pinned-dependencies"]
+sources = { OSSF = ["Pinned-Dependencies"] }
+response = "Replace mutable references with verified immutable versions; test compatibility and plan updates."
+
+[remedies."ossf-pinned-dependencies".issue]
+title = "Dependency references are mutable or insufficiently pinned in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-sast"]
+sources = { OSSF = ["SAST"] }
+response = "Configure suitable static analysis and verify useful results; a merge gate alone is insufficient."
+
+[remedies."ossf-sast".issue]
+title = "Static-analysis evidence indicates possible gaps in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-sbom"]
+sources = { OSSF = ["SBOM"] }
+response = "Generate an accurate SBOM, validate it and update it with releases."
+
+[remedies."ossf-sbom".issue]
+title = "Software bill of materials is missing or not detected in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-signed-releases"]
+sources = { OSSF = ["Signed-Releases"] }
+response = "Establish artifact signing/provenance and verify it; distinguish release signatures from commit signatures."
+
+[remedies."ossf-signed-releases".issue]
+title = "Release-signing evidence is missing or incomplete in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-token-permissions"]
+sources = { OSSF = ["Token-Permissions"] }
+response = "Reduce workflow-token permissions to demonstrated job needs and verify workflows still run."
+
+[remedies."ossf-token-permissions".issue]
+title = "Workflow token permissions may be broader than necessary in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]
+
+[remedies."ossf-vulnerabilities"]
+sources = { OSSF = ["Vulnerabilities"] }
+response = "Triage exact advisories and dependency paths; test supported fixes and handle sensitive findings privately."
+
+[remedies."ossf-vulnerabilities".issue]
+title = "Reported vulnerabilities need triage in ${repository}"
+body = "engineering-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "affected_components",
+]

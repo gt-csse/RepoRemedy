@@ -1,0 +1,398 @@
+schema_version = 3
+
+[remedies."ossf-webhooks"]
+sources = { OSSF = ["Webhooks"] }
+response = "Agree who will configure webhook authentication through private settings and verify sender/receiver behavior. Describe only the configuration status and non-secret verification results; never include secret values, credentials or authenticated webhook URLs in proposal inputs."
+
+[remedies."ossf-webhooks".issue]
+title = "Webhook authentication configuration needs review in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-auto-merge"]
+sources = { RA = ["AutoMerge"] }
+response = "Align auto-merge availability with policy; verify review and check gates."
+
+[remedies."ra-auto-merge".issue]
+title = "Auto-merge availability differs from project policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-default-branch"]
+sources = { RA = ["DefaultBranch"] }
+response = "Confirm the intended default branch and plan changes to CI, protections and integrations before renaming."
+
+[remedies."ra-default-branch".issue]
+title = "Default branch differs from the configured requirement in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-delete-head-branches"]
+sources = { RA = ["DeleteHeadBranches"] }
+response = "Configure branch cleanup while preserving long-lived branches and dependent work."
+
+[remedies."ra-delete-head-branches".issue]
+title = "Post-merge branch cleanup differs from project policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-dependabot-security-updates"]
+sources = { RA = ["DependabotSecurityUpdates"] }
+response = "Verify prerequisites and enable security updates when intended; distinguish this from version-update configuration."
+
+[remedies."ra-dependabot-security-updates".issue]
+title = "Dependabot security-update setting needs attention in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-description"]
+sources = { RA = ["Description"] }
+response = "Set a maintainer-approved description in the repository's About section."
+
+[remedies."ra-description".issue]
+title = "Repository description is missing or does not meet the audit requirement in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-merge-commit"]
+sources = { RA = ["MergeCommit"] }
+response = "Align merge methods with history policy and verify a permitted merge path."
+
+[remedies."ra-merge-commit".issue]
+title = "Merge-commit availability differs from history policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-merge-commit-message"]
+sources = { RA = ["MergeCommitMessage"] }
+response = "Set approved merge-message defaults and preview the generated message."
+
+[remedies."ra-merge-commit-message".issue]
+title = "Merge-commit message defaults differ from project conventions in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-rebase-merge-commit"]
+sources = { RA = ["RebaseMergeCommit"] }
+response = "Align rebase merging with history policy; verify signature and attribution behavior."
+
+[remedies."ra-rebase-merge-commit".issue]
+title = "Rebase-merge availability differs from history policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-secret-scanning"]
+sources = { RA = ["SecretScanning"] }
+response = "Configure available secret scanning; handle exposed secrets privately and rotate them."
+
+[remedies."ra-secret-scanning".issue]
+title = "Secret-scanning setting needs attention in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-secret-scanning-push-protection"]
+sources = { RA = ["SecretScanningPushProtection"] }
+response = "Configure push protection and exceptions; validate with harmless test data."
+
+[remedies."ra-secret-scanning-push-protection".issue]
+title = "Secret-scanning push-protection setting needs attention in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-squash-commit-merge"]
+sources = { RA = ["SquashCommitMerge"] }
+response = "Align squash merging with history policy; verify attribution and protections."
+
+[remedies."ra-squash-commit-merge".issue]
+title = "Squash-merge availability differs from history policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-squash-merge-commit-message"]
+sources = { RA = ["SquashMergeCommitMessage"] }
+response = "Set squash-message defaults and verify context and attribution."
+
+[remedies."ra-squash-merge-commit-message".issue]
+title = "Squash-commit message defaults differ from project conventions in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-suggest-updating-pull-request-branches"]
+sources = { RA = ["SuggestUpdatingPullRequestBranches"] }
+response = "Configure update-branch suggestions and verify the intended CI workflow."
+
+[remedies."ra-suggest-updating-pull-request-branches".issue]
+title = "Update-branch suggestions differ from the expected workflow in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-support-discussions"]
+sources = { RA = ["SupportDiscussions"] }
+response = "Configure discussions with agreed moderation and ownership."
+
+[remedies."ra-support-discussions".issue]
+title = "Discussion availability differs from community policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-support-issues"]
+sources = { RA = ["SupportIssues"] }
+response = "Align issue tracking with the support process; preserve existing reports and routing."
+
+[remedies."ra-support-issues".issue]
+title = "Issue-tracker availability differs from support policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-support-projects"]
+sources = { RA = ["SupportProjects"] }
+response = "Align project-board availability with the team's planning process."
+
+[remedies."ra-support-projects".issue]
+title = "Project-board availability differs from planning policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-support-wikis"]
+sources = { RA = ["SupportWikis"] }
+response = "Align wiki availability with documentation needs; preserve existing content and access."
+
+[remedies."ra-support-wikis".issue]
+title = "Wiki availability differs from documentation policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-template-repository"]
+sources = { RA = ["TemplateRepository"] }
+response = "Align template status with intended repository use and verify the setting."
+
+[remedies."ra-template-repository".issue]
+title = "Template-repository status differs from the configured requirement in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-web-commit-signoff"]
+sources = { RA = ["WebCommitSignoff"] }
+response = "Align web sign-off with contribution policy; distinguish sign-off from cryptographic signing."
+
+[remedies."ra-web-commit-signoff".issue]
+title = "Web-commit sign-off setting differs from contribution policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]

@@ -1,0 +1,309 @@
+schema_version = 3
+
+[remedies."ra-citation"]
+sources = { RA = ["Citation"] }
+response = "Add accurate citation metadata from project records and validate its format."
+
+[remedies."ra-citation".issue]
+title = "Citation metadata is missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-citation".pr]
+title = "Add CITATION.cff to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `CITATION.cff` using reviewed repository information."
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "verification_steps",
+    "approved_citation_metadata",
+]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-citation".pr.files]]
+path = "CITATION.cff"
+template = "CITATION.cff"
+operation = "create"
+
+[remedies."ra-code-of-conduct"]
+sources = { RA = ["CodeOfConduct"] }
+response = "Draft the agreed conduct policy with a maintainer-approved enforcement contact."
+
+[remedies."ra-code-of-conduct".issue]
+title = "Code of conduct is missing or not detected in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-code-of-conduct".pr]
+title = "Add CODE_OF_CONDUCT.md to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `CODE_OF_CONDUCT.md` using reviewed repository information."
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "verification_steps",
+    "approved_code_of_conduct",
+]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-code-of-conduct".pr.files]]
+path = "CODE_OF_CONDUCT.md"
+template = "CODE_OF_CONDUCT.md"
+operation = "create"
+
+[remedies."ra-code-owners"]
+sources = { RA = ["CodeOwners"] }
+response = "Define agreed path owners and verify reviewer access and matching patterns."
+
+[remedies."ra-code-owners".issue]
+title = "Code ownership is not documented in a recognized file in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-code-owners".pr]
+title = "Add .github/CODEOWNERS to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `.github/CODEOWNERS` using reviewed repository information."
+required_inputs = ["repository", "origin", "check", "evidence", "verification_steps", "approved_codeowners"]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-code-owners".pr.files]]
+path = ".github/CODEOWNERS"
+template = "CODEOWNERS"
+operation = "create"
+
+[remedies."ra-contributing"]
+sources = { RA = ["Contributing"] }
+response = "Document contribution setup, tests and review expectations; verify the commands."
+
+[remedies."ra-contributing".issue]
+title = "Contribution guidance is missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-contributing".pr]
+title = "Add CONTRIBUTING.md to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `CONTRIBUTING.md` using reviewed repository information."
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "verification_steps",
+    "development_setup",
+    "test_instructions",
+    "contribution_process",
+]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-contributing".pr.files]]
+path = "CONTRIBUTING.md"
+template = "CONTRIBUTING.md"
+operation = "create"
+
+[remedies."ra-issue-templates"]
+sources = { RA = ["IssueTemplates"] }
+response = "Add suitable bug/feature templates and verify the issue creation flow."
+
+[remedies."ra-issue-templates".issue]
+title = "Issue templates are missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-issue-templates".pr]
+title = "Add issue templates to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add bug-report and feature-request templates under `.github/ISSUE_TEMPLATE/`."
+required_inputs = ["repository", "origin", "check", "evidence", "verification_steps"]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-issue-templates".pr.files]]
+path = ".github/ISSUE_TEMPLATE/bug_report.md"
+template = "bug_report.md"
+operation = "create"
+
+[[remedies."ra-issue-templates".pr.files]]
+path = ".github/ISSUE_TEMPLATE/feature_request.md"
+template = "feature_request.md"
+operation = "create"
+
+[remedies."ra-license-file"]
+sources = { RA = ["LicenseFile"] }
+response = "Add the maintainer-selected license with approved attribution; preserve existing valid notices."
+
+[remedies."ra-license-file".issue]
+title = "License file is missing or not detected in ${repository}"
+body = "decision-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-license-file".pr]
+title = "Add LICENSE to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `LICENSE` using reviewed repository information."
+required_inputs = ["repository", "origin", "check", "evidence", "verification_steps", "approved_license_text"]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-license-file".pr.files]]
+path = "LICENSE"
+template = "LICENSE.txt"
+operation = "create"
+
+[remedies."ra-pull-request-template"]
+sources = { RA = ["PullRequestTemplate"] }
+response = "Add a concise PR template covering purpose, changes and validation."
+
+[remedies."ra-pull-request-template".issue]
+title = "Pull request template is missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-pull-request-template".pr]
+title = "Add .github/pull_request_template.md to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `.github/pull_request_template.md` using reviewed repository information."
+required_inputs = ["repository", "origin", "check", "evidence", "verification_steps"]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-pull-request-template".pr.files]]
+path = ".github/pull_request_template.md"
+template = "pull_request_template.md"
+operation = "create"
+
+[remedies."ra-read-me"]
+sources = { RA = ["ReadMe"] }
+response = "Draft a README with verified installation, usage and support information; preserve valid existing documentation."
+
+[remedies."ra-read-me".issue]
+title = "README is missing or not detected in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."ra-read-me".pr]
+title = "Add README.md to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `README.md` using reviewed repository information."
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "verification_steps",
+    "project_name",
+    "project_summary",
+    "installation_instructions",
+    "usage_instructions",
+    "support_instructions",
+]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ra-read-me".pr.files]]
+path = "README.md"
+template = "README.md"
+operation = "create"
+
+[remedies."security-policy"]
+sources = { RA = ["SecurityPolicy"], OSSF = ["Security-Policy"] }
+response = "Add or improve the security policy using approved reporting contacts and supported-version information."
+
+[remedies."security-policy".issue]
+title = "Security policy needs attention in ${repository}"
+body = "documentation-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+]
+
+[remedies."security-policy".pr]
+title = "Add SECURITY.md to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `SECURITY.md` using reviewed repository information."
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "verification_steps",
+    "security_reporting_instructions",
+    "supported_versions",
+]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."security-policy".pr.files]]
+path = "SECURITY.md"
+template = "SECURITY.md"
+operation = "create"

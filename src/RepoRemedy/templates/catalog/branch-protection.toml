@@ -1,0 +1,421 @@
+schema_version = 3
+
+[remedies."ossf-branch-protection"]
+sources = { OSSF = ["Branch-Protection"] }
+response = "Inspect effective rules and propose only the specific protections supported by evidence."
+
+[remedies."ossf-branch-protection".issue]
+title = "Branch-protection evidence indicates possible gaps in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ossf-code-review"]
+sources = { OSSF = ["Code-Review"] }
+response = "Improve review practices and requirements; distinguish future enforcement from historical evidence."
+
+[remedies."ossf-code-review".issue]
+title = "Code-review evidence indicates possible gaps in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-allow-deletions"]
+sources = { RA = ["AllowDeletions", "RestrictDeletionsRule"] }
+response = "Align deletion rules with policy; account for opposite check polarity and use a test branch."
+
+[remedies."ra-allow-deletions".issue]
+title = "Branch-deletion permissions differ from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-allow-mainline-force-pushes"]
+sources = { RA = ["AllowMainlineForcePushes", "BlockMainlineForcePushesRule"] }
+response = "Align force-push rules and exceptions; account for opposite polarity without rewriting shared history."
+
+[remedies."ra-allow-mainline-force-pushes".issue]
+title = "Force-push permissions differ from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-dismiss-stale-pull-request-approvals"]
+sources = { RA = ["DismissStalePullRequestApprovals", "DismissStalePullRequestApprovalsRule"] }
+response = "Configure stale-review dismissal and verify approval behavior after a new push."
+
+[remedies."ra-dismiss-stale-pull-request-approvals".issue]
+title = "Stale-approval dismissal differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-do-not-allow-bypass-settings"]
+sources = { RA = ["DoNotAllowBypassSettings"] }
+response = "Review administrator bypass and emergency access; verify the intended restrictions."
+
+[remedies."ra-do-not-allow-bypass-settings".issue]
+title = "Administrator bypass of classic protection differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-ensure-status-checks"]
+sources = { RA = ["EnsureStatusChecks", "EnsureStatusChecksRule"] }
+response = "Configure exact observed check names and source apps; verify both passing and failing outcomes."
+
+[remedies."ra-ensure-status-checks".issue]
+title = "Required status checks are missing or differ from expectations in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-protected"]
+sources = { RA = ["Protected"] }
+response = "Inspect effective branch protection and propose rules suited to the project."
+
+[remedies."ra-protected".issue]
+title = "Default-branch protection is absent or not detected in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-approval-most-recent-push"]
+sources = { RA = ["RequireApprovalMostRecentPush", "RequireApprovalMostRecentPushRule"] }
+response = "Require an eligible reviewer other than the last pusher where policy calls for it."
+
+[remedies."ra-require-approval-most-recent-push".issue]
+title = "Approval of the most recent reviewable push differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-approvals"]
+sources = { RA = ["RequireApprovals", "RequireApprovalsRule"] }
+response = "Set the agreed approval threshold and verify eligible reviewers; respect each check's configured expectations."
+
+[remedies."ra-require-approvals".issue]
+title = "Required approval count does not meet the audit requirement in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-code-owner-review"]
+sources = { RA = ["RequireCodeOwnerReview", "RequireCodeOwnerReviewRule"] }
+response = "Validate CODEOWNERS and reviewer access, then verify required owner approval."
+
+[remedies."ra-require-code-owner-review".issue]
+title = "Code-owner approval requirement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-code-scanning-results-rule"]
+sources = { RA = ["RequireCodeScanningResultsRule"] }
+response = "Configure scanner requirements and thresholds; validate the gate with controlled results."
+
+[remedies."ra-require-code-scanning-results-rule".issue]
+title = "Required code-scanning results differ from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-conversation-resolution"]
+sources = { RA = ["RequireConversationResolution", "RequireConversationResolutionRule"] }
+response = "Align conversation-resolution requirements with policy and verify an unresolved review thread."
+
+[remedies."ra-require-conversation-resolution".issue]
+title = "Review-conversation resolution requirement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-linear-history"]
+sources = { RA = ["RequireLinearHistory", "RequireLinearHistoryRule"] }
+response = "Align linear-history enforcement with supported merge methods and signature requirements."
+
+[remedies."ra-require-linear-history".issue]
+title = "Linear-history requirement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-pull-requests"]
+sources = { RA = ["RequirePullRequests", "RequirePullRequestsRule"] }
+response = "Align PR requirements with policy; verify restricted direct changes and permitted PRs."
+
+[remedies."ra-require-pull-requests".issue]
+title = "PR-before-merge requirement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-signed-commits"]
+sources = { RA = ["RequireSignedCommits", "RequireSignedCommitsRule"] }
+response = "Configure required signatures and verify contributor/bot support; do not rewrite history automatically."
+
+[remedies."ra-require-signed-commits".issue]
+title = "Commit-signature requirement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-status-checks-to-pass"]
+sources = { RA = ["RequireStatusChecksToPass", "RequireStatusChecksToPassRule"] }
+response = "Require working checks and verify that failing results block merging."
+
+[remedies."ra-require-status-checks-to-pass".issue]
+title = "Required-check enforcement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-successful-deployments-rule"]
+sources = { RA = ["RequireSuccessfulDeploymentsRule"] }
+response = "Select working deployment environments and verify that missing or failed deployments block merging."
+
+[remedies."ra-require-successful-deployments-rule".issue]
+title = "Required successful deployments differ from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-require-up-to-date-branches"]
+sources = { RA = ["RequireUpToDateBranches", "RequireUpToDateBranchesRule"] }
+response = "Align branch freshness requirements with the update or merge-queue workflow."
+
+[remedies."ra-require-up-to-date-branches".issue]
+title = "Up-to-date branch requirement differs from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-restrict-creations-rule"]
+sources = { RA = ["RestrictCreationsRule"] }
+response = "Set ref-creation restrictions for agreed patterns and authorized actors."
+
+[remedies."ra-restrict-creations-rule".issue]
+title = "Ref-creation restrictions differ from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
+
+[remedies."ra-restrict-updates-rule"]
+sources = { RA = ["RestrictUpdatesRule"] }
+response = "Set ref-update restrictions while preserving legitimate release and automation access."
+
+[remedies."ra-restrict-updates-rule".issue]
+title = "Ref-update restrictions differ from policy in ${repository}"
+body = "settings-issue.md"
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "target",
+    "observed_state",
+    "verification_steps",
+    "setting_location",
+    "reported_expected_value",
+    "approved_value",
+]
