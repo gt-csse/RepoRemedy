@@ -23,6 +23,18 @@ Before publication, recheck the target content and avoid duplicates, including o
 
 Rejects malformed, unsupported or ambiguous inputs, keeps unknown checks visible and missing data is not proof of a defect.
 
+Readers accept GitHub.com and GitHub Enterprise repository identities. `OWNER/REPO`
+defaults to GitHub.com; Enterprise repositories use an HTTPS URL or
+`HOST/OWNER/REPO`. Normalized identities retain Enterprise hosts and non-default
+HTTPS ports so scan selection and later publication distinguish repositories with
+the same owner/name on different instances. GitHub.com identities retain the
+`owner/repo` shorthand. Readers operate offline; host acceptance does not verify
+server availability or publication permissions. The publisher must use the retained
+host when selecting API endpoints and credentials.
+
+OpenSSF Scorecard support is intentionally limited to v5 exports until other major
+versions have compatibility tests.
+
 RepoAuditor's `Incomplete data was encountered` diagnostic maps to `unavailable`,
 preserving `original_status` (`Warning` or `Error`) and the source evidence.
 Other warnings/errors keep their normalized status. Scorecard preserves its original
@@ -61,7 +73,9 @@ so users can review results and resume interrupted work. Isolate failures within
 
 Both readers return the same Pydantic [report and issue models](../src/RepoRemedy/models.py).
 A report contains repository identity, source provenance and normalized issues.
-`Optional` fields may be null.
+`Optional` fields may be null. In Python, the source path is a `Path` and the scan
+date is a `date` or `datetime`, preserving the export's precision and timezone.
+JSON serializes paths as strings and dates/timestamps in ISO format.
 
 ```mermaid
 classDiagram
@@ -76,12 +90,12 @@ classDiagram
     }
 
     class Source {
-        string path
+        Path path
         string sha256
         string report_type
         Optional~string~ version
         Optional~string~ audited_commit
-        Optional~string~ scan_date
+        Optional~date_or_datetime~ scan_date
     }
 
     class Issue {
@@ -102,12 +116,17 @@ classDiagram
 | Area | Choice |
 | --- | --- |
 | Runtime and packaging | Python 3.14+, uv and uv_build; MIT license. |
-| CLI | Typer with `inspect`, `--help` and `--version`; install from the checkout until a release is published. |
+| CLI | Typer subcommands: `RepoRemedy inspect REPORT --report-type TYPE --repo REPOSITORY`, with root `--help` and `--version`; install from the checkout until a release is published. |
 | Data and HTTP clients | Pydantic validates reports and issues. HTTPX remains planned for GitHub and model APIs. |
 | `non-llm` | Default mode using fixed catalog responses. |
 | `local-llm` | Proposals generated through a configured Ollama endpoint. |
 | `llm` | Proposals generated through a configured hosted OpenAI-compatible endpoint. |
 | Quality checks | Ruff, ty, pytest, pre-commit and GitHub Actions; 95% coverage gate. |
+
+`inspect` reads reports offline. Publication will be a separate `publish` command
+that consumes reviewed proposals and requires explicit confirmation. Keeping these
+actions separate lets users inspect and review results before choosing to publish.
+The root callback preserves this command structure while providing `--version`.
 
 All modes use the same review and publication flow. Show what context is sent to
 hosted models; keep credentials out of artifacts and treat generated content as untrusted.

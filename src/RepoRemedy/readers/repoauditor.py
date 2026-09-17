@@ -4,7 +4,7 @@
 import re
 
 from RepoRemedy.models import Issue, Report, Source
-from RepoRemedy.readers.common import fail
+from RepoRemedy.readers.common import ReportError
 
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 TOP = re.compile(r"^[ │┃]*([╭┌])[─━ ]*\[")
@@ -16,7 +16,8 @@ INCOMPLETE = re.compile(r"^(?:WARNING|ERROR):\s+Incomplete\s+data\s+was\s+encoun
 def _issue(key: str, status: str, evidence: str, location: str) -> Issue:
     """Normalize unavailable evidence without losing the export's original status."""
     if not evidence:
-        fail("RepoAuditor finding has no evidence")
+        message = "RepoAuditor finding has no evidence"
+        raise ReportError(message)
     normalized_status = "warning" if status == "Warning" else "error"
     if INCOMPLETE.search(evidence):
         normalized_status = "unavailable"
@@ -40,18 +41,21 @@ def _validate_metrics(evidence: str, observed: dict[str, int]) -> None:
     ):
         values = re.findall(rf"^{label}:\s+(\d+)\s+\(\d+(?:\.\d+)?%\)$", evidence, re.MULTILINE)
         if len(values) != 1:
-            fail("Incomplete or malformed RepoAuditor Metrics panel")
+            message = "Incomplete or malformed RepoAuditor Metrics panel"
+            raise ReportError(message)
         count = int(values[0])
         actual = observed.get(status, 0)
         if count < actual or (status in {"Warning", "Error"} and count != actual):
-            fail("RepoAuditor Metrics do not match the saved check panels")
+            message = "RepoAuditor Metrics do not match the saved check panels"
+            raise ReportError(message)
 
 
 def _validate_clean_summary(text: str) -> None:
     """Accept legacy plain summaries only when no warning/error panels are expected."""
     counts = [re.findall(rf"{name}:\s+(\d+)\s+\(", text) for name in ("Warnings", "Errors")]
     if "Metrics" not in text or "Successful:" not in text or not all(c and set(c) == {"0"} for c in counts):
-        fail("Unrecognized RepoAuditor export; supply intact saved report panels")
+        message = "Unrecognized RepoAuditor export; supply intact saved report panels"
+        raise ReportError(message)
 
 
 def read_repoauditor(text: str, repository: str, source: Source) -> Report:
@@ -73,10 +77,12 @@ def read_repoauditor(text: str, repository: str, source: Source) -> Report:
                 or line[depth] not in "│┃╰└"
                 or not line.rstrip().endswith(("│", "┃", "╯", "┘"))
             ):
-                fail("Truncated or malformed RepoAuditor panel")
+                message = "Truncated or malformed RepoAuditor panel"
+                raise ReportError(message)
             if line[depth] in "╰└":
                 if not re.fullmatch(r"[╰└][─━]+[╯┘][ │┃]*", line[depth:]):
-                    fail("Malformed RepoAuditor closing border")
+                    message = "Malformed RepoAuditor closing border"
+                    raise ReportError(message)
                 evidence = "\n".join(row.strip(" │┃") for row in lines[start + 1 : index]).strip()
                 if status == "Metrics":
                     _validate_metrics(evidence, observed)
@@ -89,19 +95,23 @@ def read_repoauditor(text: str, repository: str, source: Source) -> Report:
                 active = None
         elif metrics:
             if not re.fullmatch(r"[─━ ]*[╮┐][ │┃]*", line[metrics.end() :]):
-                fail("Malformed RepoAuditor Metrics panel header")
+                message = "Malformed RepoAuditor Metrics panel header"
+                raise ReportError(message)
             active = (index, metrics.start(1), "Metrics", "")
         elif top:
             header = HEADER.search(line, top.start())
             if not header:
-                fail("Unsupported or incomplete RepoAuditor panel header")
+                message = "Unsupported or incomplete RepoAuditor panel header"
+                raise ReportError(message)
             status, key = header.groups()
             if key in seen:
-                fail("Repeated RepoAuditor check is ambiguous; select one repository/branch report")
+                message = "Repeated RepoAuditor check is ambiguous; select one repository/branch report"
+                raise ReportError(message)
             seen.add(key)
             active = (index, top.start(1), status, key)
     if active:
-        fail("Truncated RepoAuditor panel")
+        message = "Truncated RepoAuditor panel"
+        raise ReportError(message)
     if not seen and not metrics_count:
         _validate_clean_summary("\n".join(lines))
     return Report(
