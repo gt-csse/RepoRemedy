@@ -2,7 +2,7 @@
 
 Potential issues from **RepoAuditor (RA)** and **OpenSSF Scorecard (OSSF)**,
 organized as **issue | type | response | origin**. These are review candidates;
-each response names its stable remedy ID and links to its topic catalog. Rendering and publication are not yet implemented.
+each response names its stable remedy ID and links to its topic catalog. [`propose`](repository-context.md) gathers context and renders these remedies; publication remains a separate, planned step.
 
 Types: **Documentation**, **Settings**, **Configuration**, **Engineering**, or
 **Manual** (a maintainer decision). File changes become draft PRs; settings responses

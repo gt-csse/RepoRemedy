@@ -6,7 +6,7 @@ repositories. This is the proposed design at this point is expected to update.
 ## Workflow
 
 1. **Inspect** a RepoAuditor text report or OpenSSF Scorecard JSON report.
-2. **Preview** remedies using the report, [catalog](catalog.md) and current repository context.
+2. **Propose** remedies: gather repository context, resolve [catalog](catalog.md) inputs and render an issue or eligible draft PR.
 3. **Review** the evidence, proposed changes, missing inputs and validation steps.
 4. **Publish** selected proposals after confirmation: settings issues or draft PRs for file changes.
 5. **Collect feedback** from maintainers: accepted, declined, changes requested or pending.
@@ -123,7 +123,8 @@ classDiagram
 | `llm` | Proposals generated through a configured hosted OpenAI-compatible endpoint. |
 | Quality checks | Ruff, ty, pytest, pre-commit and GitHub Actions; 95% coverage gate. |
 
-`inspect` reads reports offline. Publication will be a separate `publish` command
+`inspect` reads reports offline. `propose` gathers context and creates saved issue/PR
+content with evidence, inputs and readiness status. Publication will be a separate `publish` command
 that consumes reviewed proposals and requires explicit confirmation. Keeping these
 actions separate lets users inspect and review results before choosing to publish.
 The root callback preserves this command structure while providing `--version`.
@@ -133,15 +134,16 @@ hosted models; keep credentials out of artifacts and treat generated content as 
 
 ## Repository context
 
-The internal [context models and collection service](../src/RepoRemedy/context/repository_context.py) retrieves files
-at a resolved commit and separately records live GitHub observations. It supports
-GitHub.com and Enterprise identities. Internal catalog loading and input resolution
-map observations and maintainer inputs to declared routes, retaining provenance and
-missing values. Route selection, rendering and the `propose` command follow in the
-next PR; there are no separate context or input-resolution commands.
-API details are available in the [context guide](repository-context.md) and beside
-the definitions. Live-test instructions are in the [test guide](live-context-test.md)
-and [the integration test module](../tests/live/repository_context_test.py).
+Context gathering is an internal part of `propose`, not a separate command.
+Files are pinned to the audit's recorded commit (or `main` if none is recorded);
+`--ref` overrides that choice. Live GitHub settings are recorded separately.
+The same invocation resolves catalog inputs, selects a route, checks file-creation
+guards and renders concrete publication content. See [proposing remedies](repository-context.md)
+for the command, saved bundle, authentication and current limitations.
+The [context models and collection service](../src/RepoRemedy/context/repository_context.py)
+also document collection contracts beside their definitions. Live-test instructions
+are in the [test guide](live-context-test.md) and
+[the integration test module](../tests/live/repository_context_test.py).
 
 ## Non-LLM templates
 
@@ -198,7 +200,7 @@ The `ra-description` definition in the repository-settings catalog produces
 administrator instructions. There are 68 remedy definitions covering all 69 catalog
 rows; nine define an optional file-creation PR. The five shared bodies replace 77
 per-remedy body files. Ten proposed-file assets retain their distinct formats and
-content. These assets do not yet implement a renderer.
+content. `propose` renders these packaged assets using single-pass substitution.
 
 **Catalog contract (schema version 3):** each topic file declares `schema_version = 3`
 and a `remedies` table keyed by stable remedy ID. IDs must be unique across all topic
@@ -246,10 +248,13 @@ Require every declared input, reject unexpected placeholders, and validate the s
 mapping. Preserve missing inputs as `needs-input`; never publish incomplete content.
 Substituted values are data and must not be interpreted again as template instructions.
 
-**Preview and publication:** save customized output under `runs/<run>/<repository>/`,
-leaving packaged templates unchanged. Skip resolved findings and reject unavailable,
-ambiguous or stale evidence. Show issue text or proposed file diffs for review before
-explicit publication. Revalidate target state and reconcile publication receipts on retry.
+**Proposal and publication:** `propose` writes a self-contained JSON bundle to stdout;
+redirect it to a local file for review. The bundle includes rendered titles, bodies,
+file content/diffs, source evidence, commit context and readiness reasons, leaving
+packaged templates unchanged. Unknown/unavailable findings are retained without
+rendering. Missing inputs, uncertain file absence and differing audited/context
+commits prevent readiness. A future publisher must consume only selected `ready`
+proposal content, revalidate target state and reconcile publication receipts on retry.
 
 **PR guards:** `confirmed_gap` means current evidence supports the change;
 `target_absent` requires the destination not to exist; `no_equivalent_file` requires
@@ -266,9 +271,8 @@ select existing shared bodies, write the specific
 response and declare every runtime input and source identifier. Add proposed-file
 assets only when needed, link the definition from the catalog, and run the asset tests.
 Those tests check unique IDs across topics, shared-body selection, catalog links,
-mappings, inputs and paths; later renderer
-tests must cover applicability, validation, already-correct/unavailable cases and
-package loading. Keep catalog links relative.
+mappings, inputs and paths. Proposal tests cover rendering, route selection,
+creation guards, missing/unavailable/stale cases and preservation of literal inputs. Keep catalog links relative.
 
 ## Scope and delivery
 
