@@ -78,6 +78,9 @@ Authentication state still requires private verification. Repository files and
 report evidence may themselves contain sensitive data; the snapshot is a local
 artifact, not a public issue body.
 
+See [the live context test](live-context-test.md) for an opt-in run against a real
+GitHub fixture, including setup constraints and collection coverage.
+
 ## Validation
 
 ```shell
