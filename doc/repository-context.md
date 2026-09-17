@@ -27,6 +27,20 @@ port when needed. Pass an optional `token` for the requested host. GitHub.com us
 redirects or server-provided pagination URLs. Authentication values are excluded
 from collected API metadata and error messages.
 
+## Why collection is a function
+
+`collect_context()` performs one collection operation and returns a
+`RepositoryContext` snapshot. The repository, HTTP client, revision and optional
+credential are explicit arguments; per-collection state stays local. A module-level
+function keeps the interface simple and lets tests inject an HTTP client without
+constructing a collector object. It does not rely on shared mutable global state.
+
+`GitHubReader` is a class because it groups reusable request configuration: the
+HTTP client, repository URLs and authentication headers used across API calls.
+A separate collector class would be useful if collection later needs persistent
+caching or configurable policies reused across calls. The current operation does
+not need that additional object lifecycle.
+
 ## What is collected
 
 | Evidence | Sources | Time semantics |

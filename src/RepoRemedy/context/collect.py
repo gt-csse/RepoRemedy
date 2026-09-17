@@ -244,7 +244,13 @@ def collect_context(
     ref: str = "main",
     token: str | None = None,
 ) -> RepositoryContext:
-    """Resolve the requested ref once; fetch all file contents using immutable blob SHAs."""
+    """Resolve the requested ref once; fetch all file contents using immutable blob SHAs.
+
+    A module-level function fits this single collection operation: dependencies
+    are explicit arguments and per-collection state stays local. GitHubReader
+    holds the reusable request configuration. A collector class would become
+    useful for persistent caching or reusable collection policies.
+    """
     started = datetime.datetime.now(datetime.UTC)
     reader = GitHubReader(repository, client, token)
     metadata = _required(reader.read(), "repository metadata")
