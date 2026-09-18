@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel
 
 from RepoRemedy.context.github import Observation, get_repository_address
+from RepoRemedy.context.repository_context import is_manifest_path
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -37,17 +38,17 @@ SECTIONS = {
     "supported_versions": ("supported versions",),
 }
 FILE_STEMS = {
-    "ra-read-me": "readme",
-    "ra-contributing": "contributing",
-    "ra-code-of-conduct": "code_of_conduct",
-    "ra-license-file": "license",
-    "ra-license": "license",
-    "ossf-license": "license",
-    "security-policy": "security",
-    "ra-code-owners": "codeowners",
-    "ra-citation": "citation",
-    "ra-pull-request-template": "pull_request_template",
-    "ra-issue-templates": "issue_template",
+    "ra-read-me": {"readme"},
+    "ra-contributing": {"contributing"},
+    "ra-code-of-conduct": {"code_of_conduct"},
+    "ra-license-file": {"license", "copying"},
+    "ra-license": {"license", "copying"},
+    "ossf-license": {"license", "copying"},
+    "security-policy": {"security"},
+    "ra-code-owners": {"codeowners"},
+    "ra-citation": {"citation"},
+    "ra-pull-request-template": {"pull_request_template"},
+    "ra-issue-templates": {"issue_template"},
 }
 METADATA_KEYS = {
     "Description": "description",
@@ -86,15 +87,17 @@ class ResolvedInputs:
 
 def find_matching_files(context: RepositoryContext, remedy_id: str) -> list[Path]:
     """Locate file evidence including alternate community locations and issue forms."""
-    stem = FILE_STEMS.get(remedy_id)
-    if stem is None:
+    stems = FILE_STEMS.get(remedy_id)
+    if stems is None:
         return []
     return sorted(
         path
         for path in context.paths
-        if path.name.lower().split(".")[0] == stem
-        or (stem == "license" and path.name.lower().split(".")[0] == "copying")
-        or (stem in {"issue_template", "pull_request_template"} and f"{stem}/" in path.as_posix().lower())
+        if path.name.lower().split(".")[0] in stems
+        or any(
+            f"{stem}/" in path.as_posix().lower()
+            for stem in stems & {"issue_template", "pull_request_template"}
+        )
     )
 
 
@@ -258,8 +261,7 @@ def resolve_inputs(
         components = sorted(
             path
             for path in context.files
-            if path.as_posix().lower().startswith(".github/workflows/")
-            or path.name.lower() in {"pyproject.toml", "package.json", "cargo.toml", "go.mod", "pom.xml"}
+            if path.as_posix().lower().startswith(".github/workflows/") or is_manifest_path(path)
         )
         if components:
             values["affected_components"] = ResolvedInput(
