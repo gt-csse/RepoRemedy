@@ -171,3 +171,99 @@ def test_cli_renders_approved_pr_in_one_invocation(monkeypatch, tmp_path):
     assert proposal["route"] == "pr" and proposal["status"] == "ready"
     assert proposal["content"]["files"][0]["path"] == "SECURITY.md"
     assert "Use the private reporting form" in proposal["content"]["files"][0]["content"]
+
+
+def make_publish_args(tmp_path, api):
+    bundle = tmp_path / "proposals.json"
+    bundle.write_text(api.bundle().model_dump_json())
+    return [
+        "publish",
+        str(bundle),
+        "--repo",
+        "acme/demo",
+        "--select",
+        "security-policy",
+        "--receipts",
+        str(tmp_path / "receipts.json"),
+        "--confirm",
+    ]
+
+
+def test_publish_command_creates_selected_issue_and_receipt(monkeypatch, tmp_path):
+    from publication_fixtures import PublishingGitHub
+
+    api = PublishingGitHub()
+    args = make_publish_args(tmp_path, api)
+    real_client = httpx.Client
+    monkeypatch.setattr(
+        "RepoRemedy.cli.httpx.Client", lambda **kwargs: real_client(transport=httpx.MockTransport(api))
+    )
+    monkeypatch.setenv("REPOREMEDY_TOKEN", "PRIVATE")
+    result = RUNNER.invoke(app, args)
+    assert result.exit_code == 0, result.output
+    data = json.loads(result.stdout)
+    assert data["receipts"]["security-policy"]["status"] == "created"
+    assert json.loads((tmp_path / "receipts.json").read_text()) == data
+    assert len(api.posts) == 1
+    assert RUNNER.invoke(app, args).exit_code == 0 and len(api.posts) == 1
+    assert "publish" in RUNNER.invoke(app, ["--help"]).stdout
+
+
+@pytest.mark.parametrize(
+    "failure", ["confirmation", "token", "same_path", "size", "json", "repository", "receipt_io"]
+)
+def test_publish_cli_rejects_invalid_inputs_without_writes(monkeypatch, tmp_path, failure):
+    from publication_fixtures import PublishingGitHub
+
+    api = PublishingGitHub()
+    args = make_publish_args(tmp_path, api)
+    real_client = httpx.Client
+    monkeypatch.setattr(
+        "RepoRemedy.cli.httpx.Client", lambda **kwargs: real_client(transport=httpx.MockTransport(api))
+    )
+    monkeypatch.setenv("REPOREMEDY_TOKEN", "PRIVATE")
+    if failure == "confirmation":
+        args.remove("--confirm")
+    elif failure == "token":
+        monkeypatch.delenv("REPOREMEDY_TOKEN")
+    elif failure == "same_path":
+        args[args.index("--receipts") + 1] = args[1]
+    elif failure == "size":
+        with Path(args[1]).open("wb") as stream:
+            stream.truncate(33 * 1024 * 1024)
+    elif failure == "json":
+        Path(args[1]).write_text("bad-json PRIVATE")
+    elif failure == "repository":
+        args[args.index("--repo") + 1] = "other/repo"
+    elif failure == "receipt_io":
+        args[args.index("--receipts") + 1] = str(tmp_path / "missing" / "receipts.json")
+    result = RUNNER.invoke(app, args)
+    assert result.exit_code == 2 and result.stdout == "" and "PRIVATE" not in result.stderr
+    assert not api.posts
+
+
+def test_publish_output_failure_keeps_receipt(monkeypatch, tmp_path):
+    from publication_fixtures import PublishingGitHub
+    from RepoRemedy.cli import typer
+
+    api = PublishingGitHub()
+    args = make_publish_args(tmp_path, api)
+    real_client = httpx.Client
+    monkeypatch.setattr(
+        "RepoRemedy.cli.httpx.Client", lambda **kwargs: real_client(transport=httpx.MockTransport(api))
+    )
+    monkeypatch.setenv("REPOREMEDY_TOKEN", "PRIVATE")
+    echo = typer.echo
+
+    def fail_output(message, **kwargs):
+        if not kwargs.get("err"):
+            raise OSError("PRIVATE")
+        return echo(message, **kwargs)
+
+    monkeypatch.setattr(typer, "echo", fail_output)
+    result = RUNNER.invoke(app, args)
+    assert result.exit_code == 2 and "PRIVATE" not in result.stderr
+    assert (
+        json.loads((tmp_path / "receipts.json").read_text())["receipts"]["security-policy"]["status"]
+        == "created"
+    )
