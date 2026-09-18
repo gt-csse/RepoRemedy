@@ -7,6 +7,10 @@ a disposable public repository containing only synthetic data. Its
 accounts for all 68 catalog remedies and explains which conditions are seeded,
 policy-dependent, historical or unavailable on this host.
 
+The [live-test module](../tests/live/repository_context_test.py) includes these
+instructions in its docstring as well. Keep both locations aligned when changing
+the fixture or test invocation.
+
 ## Run
 
 Use an account/token with access to the fixture's administrative reads (including
@@ -14,7 +18,7 @@ webhooks and repository settings). Authenticate `gh` to that account, then run:
 
 ```shell
 REPOREMEDY_LIVE_TEST=1 REPOREMEDY_TOKEN="$(gh auth token --hostname github.com)" \
-  uv run pytest tests/repository_context_live_test.py --no-cov
+  uv run pytest tests/live/repository_context_test.py --no-cov
 ```
 
 Alternatively, set `REPOREMEDY_TOKEN` through your usual secret-management mechanism.

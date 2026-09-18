@@ -2,26 +2,33 @@
 """Bounded, read-only GitHub API access with host-specific authentication."""
 
 import json
-from typing import TYPE_CHECKING
+from typing import Literal
 from urllib.parse import quote
 
 import httpx
 
-from RepoRemedy.context.models import Observation
+from pydantic import BaseModel, ConfigDict, JsonValue
 from RepoRemedy.readers.common import repository_name
-
-if TYPE_CHECKING:
-    from pydantic import JsonValue
 
 MAX_RESPONSE_BYTES = 10 * 1024 * 1024
 MAX_PAGES = 10
+
+
+class Observation(BaseModel):
+    """A read result; unavailable never means disabled or absent."""
+
+    model_config = ConfigDict(extra="forbid")
+    status: Literal["available", "unavailable", "partial"] = "available"
+    scope: Literal["commit", "live"] = "live"
+    value: JsonValue = None
+    reason: str | None = None
 
 
 class ContextError(ValueError):
     """Repository context cannot be collected or used reliably."""
 
 
-def repository_address(repository: str) -> tuple[str, str, str]:
+def get_repository_address(repository: str) -> tuple[str, str, str]:
     """Return canonical identity, web base and API repository path."""
     identity = repository_name(repository)
     parts = identity.split("/")
@@ -31,10 +38,20 @@ def repository_address(repository: str) -> tuple[str, str, str]:
 
 
 class GitHubReader:
-    """Read one repository without redirects, cross-host links or error-body disclosure."""
+    """Read one repository without redirects, cross-host links or error-body disclosure.
+
+    Instances group request configuration reused across API calls: the injected
+    HTTP client, canonical repository URL and optional authentication headers.
+    GitHub.com uses api.github.com; Enterprise retains its host and HTTPS port
+    with /api/v3. Select a token for that host; it is never included in results.
+
+    Reads are bounded to MAX_RESPONSE_BYTES; paginated lists to MAX_PAGES of 100
+    entries. Inaccessible endpoints, including unsupported Enterprise features,
+    return explicit availability instead of a claim that a feature is disabled.
+    """
 
     def __init__(self, repository: str, client: httpx.Client, token: str | None = None) -> None:
-        self.repository, self.web_url, self.api_url = repository_address(repository)
+        self.repository, self.web_url, self.api_url = get_repository_address(repository)
         self.client = client
         self.headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if token:
@@ -62,7 +79,7 @@ class GitHubReader:
         except httpx.HTTPError, ValueError, RecursionError:
             return Observation(status="unavailable", reason="GitHub request failed or returned invalid JSON")
 
-    def pages(self, suffix: str, key: str | None = None) -> Observation:
+    def read_pages(self, suffix: str, key: str | None = None) -> Observation:
         """Collect bounded pagination using local page numbers, never server-provided URLs."""
         items: list[JsonValue] = []
         for page in range(1, MAX_PAGES + 1):
@@ -81,6 +98,6 @@ class GitHubReader:
         return Observation(status="partial", value=items, reason="Pagination limit reached")
 
 
-def segment(value: str) -> str:
+def encode_segment(value: str) -> str:
     """Encode refs and paths as one API segment."""
     return quote(value, safe="")

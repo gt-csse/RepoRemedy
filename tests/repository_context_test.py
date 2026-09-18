@@ -3,14 +3,15 @@
 import base64
 import hashlib
 import json
+from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
 
 from RepoRemedy.context import RepositoryContext, collect_context
-from RepoRemedy.context.collect import relevant_path
-from RepoRemedy.context.github import ContextError, GitHubReader
+from RepoRemedy.context.repository_context import is_relevant_path
+from RepoRemedy.context.github import ContextError
 
 COMMIT = "a" * 40
 TREE = "b" * 40
@@ -98,9 +99,9 @@ def test_pinned_snapshot_and_secret_free_webhook_metadata(api):
     snapshot = api.snapshot()
     assert snapshot.requested_ref == "main" and snapshot.commit_sha == COMMIT
     assert snapshot.tree_sha == TREE and snapshot.tree_complete
-    assert set(snapshot.files) == {"README.md", ".github/workflows/test.yml"}
-    assert "src/app.py" in snapshot.paths
-    assert snapshot.files["README.md"].content.startswith("# Demo")
+    assert set(snapshot.files) == {Path("README.md"), Path(".github/workflows/test.yml")}
+    assert Path("src/app.py") in snapshot.paths
+    assert snapshot.files[Path("README.md")].content.startswith("# Demo")
     assert all(r.method == "GET" for r in api.requests)
     assert sum(r.url.path.endswith("/repos/acme/demo/branches/main") for r in api.requests) == 1
     assert all("/contents/" not in r.url.path for r in api.requests)
@@ -165,8 +166,9 @@ def test_optional_failures_do_not_become_disabled_settings(api, status):
         None,
         [],
         {},
-        {"tree": [], "truncated": True},
+        {"sha": TREE, "tree": [], "truncated": True},
         {
+            "sha": TREE,
             "tree": [False, {"path": "../README.md"}, {"path": "/README.md"}, {"path": "x\\README.md"}],
             "truncated": False,
         },
@@ -186,7 +188,7 @@ def test_duplicate_paths_make_inventory_incomplete(api):
 @pytest.mark.parametrize("mode,kind", [("120000", "blob"), ("160000", "commit")])
 def test_symlinks_and_submodules_not_followed(api, mode, kind):
     sha = api.file("README.md", "somewhere/private", mode=mode, kind=kind)
-    assert api.snapshot().files["README.md"].status == "unavailable"
+    assert api.snapshot().files[Path("README.md")].status == "unavailable"
     assert not any(r.url.path.endswith(sha) for r in api.requests)
 
 
@@ -205,14 +207,14 @@ def test_symlinks_and_submodules_not_followed(api, mode, kind):
 def test_invalid_blob_content_is_unavailable(api, change):
     sha = api.file("README.md", "Hi")
     api.responses[f"/git/blobs/{sha}"].update(change)
-    assert api.snapshot().files["README.md"].status == "unavailable"
+    assert api.snapshot().files[Path("README.md")].status == "unavailable"
 
 
 @pytest.mark.parametrize("limit", ["MAX_FILES", "MAX_FILE_BYTES", "MAX_CONTENT_BYTES"])
 def test_file_collection_is_bounded(api, monkeypatch, limit):
     sha = api.file("README.md", "Hello")
-    monkeypatch.setattr(f"RepoRemedy.context.collect.{limit}", 0)
-    assert api.snapshot().files["README.md"].status == "unavailable"
+    monkeypatch.setattr(f"RepoRemedy.context.repository_context.{limit}", 0)
+    assert api.snapshot().files[Path("README.md")].status == "unavailable"
     assert not any(r.url.path.endswith(sha) for r in api.requests)
 
 
@@ -220,7 +222,7 @@ def test_unreadable_blob_and_tree_directory(api):
     sha = api.file("README.md", "Hello")
     api.responses[f"/git/blobs/{sha}"] = None
     api.file("docs", "", mode="040000", kind="tree")
-    assert api.snapshot().files["README.md"].reason == "GitHub HTTP 404"
+    assert api.snapshot().files[Path("README.md")].reason == "GitHub HTTP 404"
 
 
 @pytest.mark.parametrize(
@@ -242,60 +244,19 @@ def test_unreadable_blob_and_tree_directory(api):
     ],
 )
 def test_context_file_selection(path):
-    assert relevant_path(path)
-
-
-def test_api_limits_errors_and_redirects(monkeypatch):
-    responses = [
-        httpx.Response(302, headers={"Location": "https://evil.example"}),
-        httpx.Response(200, content=b"bad json"),
-        httpx.Response(200, content=b"[]" * 20),
-    ]
-    monkeypatch.setattr("RepoRemedy.context.github.MAX_RESPONSE_BYTES", 10)
-    for response in responses:
-        seen = []
-
-        def transport(request):
-            seen.append(request)
-            return response
-
-        with httpx.Client(transport=httpx.MockTransport(transport), follow_redirects=True) as client:
-            result = GitHubReader("acme/demo", client, "TOKEN").read()
-        assert result.status == "unavailable" and len(seen) == 1
-
-    def timeout(request):
-        raise httpx.ReadTimeout("PRIVATE", request=request)
-
-    with httpx.Client(transport=httpx.MockTransport(timeout)) as client:
-        assert "PRIVATE" not in GitHubReader("acme/demo", client).read().model_dump_json()
-
-
-def test_pagination_partial_and_limit(monkeypatch):
-    monkeypatch.setattr("RepoRemedy.context.github.MAX_PAGES", 2)
-    for mode in ("limit", "partial", "malformed"):
-
-        def transport(request):
-            if mode == "partial" and request.url.params["page"] == "2":
-                return httpx.Response(403)
-            return httpx.Response(200, json={} if mode == "malformed" else [1] * 100)
-
-        with httpx.Client(transport=httpx.MockTransport(transport)) as client:
-            result = GitHubReader("acme/demo", client).pages("/hooks")
-        assert result.status == ("unavailable" if mode == "malformed" else "partial")
-        assert isinstance(result.value, list)
-        assert len(result.value) == (0 if mode == "malformed" else 100 if mode == "partial" else 200)
+    assert is_relevant_path(Path(path))
 
 
 @pytest.mark.parametrize("raw,reason", [(b"\xff\xff", "UTF-8"), (b"\x00x", "Binary")])
 def test_nontext_blob_with_valid_git_identity(api, raw, reason):
     api.file("README.md", raw)
-    assert reason in api.snapshot().files["README.md"].reason
+    assert reason in api.snapshot().files[Path("README.md")].reason
 
 
 def test_blob_integrity_is_checked(api):
     sha = api.file("README.md", "Hi")
     api.responses[f"/git/blobs/{sha}"]["content"] = base64.b64encode(b"No").decode()
-    assert "Git identity" in api.snapshot().files["README.md"].reason
+    assert "Git identity" in api.snapshot().files[Path("README.md")].reason
 
 
 @pytest.mark.parametrize("mutation", ["repository", "metadata", "timestamps", "path", "content"])
@@ -322,3 +283,174 @@ def test_malformed_optional_records_mark_observation_partial(api):
     api.responses["/releases"] = [{"tag_name": "v1"}, "invalid record"]
     result = api.snapshot().observations["releases"]
     assert result.status == "partial" and result.value == [{"tag_name": "v1"}]
+
+
+@pytest.mark.parametrize("length", [40, 64])
+def test_mixed_case_git_identities_are_normalized_across_api_and_models(api, length):
+    from RepoRemedy.context.repository_context import RepositoryFile
+
+    commit = ("AbCdEf0123" * 7)[:length]
+    tree = ("bCdEfA9876" * 7)[:length]
+    original_blob = api.file("docs/README.md", "Hello")
+    blob_bytes = b"blob 5\0Hello"
+    blob_sha = (
+        hashlib.sha1(blob_bytes).hexdigest() if length == 40 else hashlib.sha256(blob_bytes).hexdigest()
+    )
+    tree_data = api.responses[f"/git/trees/{TREE}"]
+    tree_data["sha"] = tree
+    tree_data["tree"][0]["sha"] = blob_sha.upper()
+    blob_data = api.responses.pop(f"/git/blobs/{original_blob}")
+    blob_data["sha"] = blob_sha.upper()
+    api.responses[f"/git/blobs/{blob_sha}"] = blob_data
+    api.responses[f"/git/trees/{tree.lower()}"] = tree_data
+    api.responses[f"/commits/{commit.lower()}"] = {"sha": commit, "commit": {"tree": {"sha": tree}}}
+    api.responses["/branches/main"] = {"commit": {"sha": commit}}
+
+    for ref in (commit, "main"):
+        snapshot = api.snapshot(ref=ref)
+        assert snapshot.commit_sha == commit.lower() and snapshot.tree_sha == tree.lower()
+        assert snapshot.files[Path("docs/README.md")].blob_sha == blob_sha
+        assert snapshot.files[Path("docs/README.md")].content == "Hello"
+    assert not any(request.url.path.endswith(f"/branches/{commit}") for request in api.requests)
+
+    data = snapshot.model_dump(mode="json")
+    data.update(commit_sha=commit, tree_sha=tree)
+    data["files"]["docs/README.md"]["blob_sha"] = blob_sha.upper()
+    assert RepositoryContext.model_validate(data) == snapshot
+    assert (
+        RepositoryFile(path=Path("docs/README.md"), blob_sha=blob_sha.upper(), status="unavailable").blob_sha
+        == blob_sha
+    )
+
+
+@pytest.mark.parametrize("invalid", ["g" * 40, "a" * 39, "a" * 41, "a" * 63, "a" * 65, "a" * 40 + "\n"])
+def test_all_model_git_identities_use_the_same_validation(api, invalid):
+    from pydantic import ValidationError
+
+    api.file("README.md", "Hello")
+    snapshot = api.snapshot()
+    for field in ("commit_sha", "tree_sha", "blob_sha"):
+        data = snapshot.model_dump(mode="json")
+        if field == "blob_sha":
+            data["files"]["README.md"][field] = invalid
+        else:
+            data[field] = invalid
+        with pytest.raises(ValidationError):
+            RepositoryContext.model_validate(data)
+
+
+def test_repository_paths_are_typed_and_json_remains_posix(api):
+    api.file("docs", "", mode="040000", kind="tree")
+    api.file("docs/README.md", "Hello")
+    snapshot = api.snapshot()
+    assert all(isinstance(path, Path) for path in snapshot.paths)
+    assert all(isinstance(path, Path) for path in snapshot.files)
+    assert all(isinstance(file.path, Path) for file in snapshot.files.values())
+    assert snapshot.observations["tree"].value["directories"] == ["docs"]
+    assert snapshot.observations["tree"].value["path_count"] == 2
+    encoded = json.loads(snapshot.model_dump_json())
+    assert encoded["paths"] == ["docs", "docs/README.md"]
+    assert encoded["files"]["docs/README.md"]["path"] == "docs/README.md"
+    assert RepositoryContext.model_validate_json(snapshot.model_dump_json()) == snapshot
+
+
+@pytest.mark.parametrize("path", ["", "C:/README.md", "C:README.md"])
+def test_invalid_repository_paths_are_rejected_before_path_conversion(api, path):
+    api.file(path, "Hello")
+    snapshot = api.snapshot()
+    assert not snapshot.tree_complete and not snapshot.paths and not snapshot.files
+
+
+@pytest.mark.parametrize("response_sha", [None, "c" * 40, "not-a-sha", 123])
+def test_untrusted_tree_identity_is_rejected_before_reading_entries(api, response_sha):
+    api.file("README.md", "Must not be collected from another tree")
+    tree = api.responses[f"/git/trees/{TREE}"]
+    if response_sha is None:
+        tree.pop("sha")
+    else:
+        tree["sha"] = response_sha
+    snapshot = api.snapshot()
+    assert not snapshot.tree_complete and not snapshot.paths and not snapshot.files
+    assert snapshot.observations["tree"].status == "partial"
+    assert "Tree response identity" in snapshot.observations["tree"].reason
+    assert not any("/git/blobs/" in request.url.path for request in api.requests)
+
+
+@pytest.mark.parametrize("entry_sha", [None, "bad-sha", 123, "a" * 39])
+def test_malformed_entry_identity_keeps_valid_files_and_marks_inventory_incomplete(api, entry_sha):
+    invalid_blob = api.file("README.md", "Invalid entry")
+    api.file("SECURITY.md", "Valid policy")
+    entry = api.responses[f"/git/trees/{TREE}"]["tree"][0]
+    if entry_sha is None:
+        entry.pop("sha")
+    else:
+        entry["sha"] = entry_sha
+    snapshot = api.snapshot()
+    assert not snapshot.tree_complete
+    assert Path("README.md") in snapshot.paths and Path("README.md") not in snapshot.files
+    assert snapshot.files[Path("SECURITY.md")].content == "Valid policy"
+    assert snapshot.observations["tree"].status == "partial"
+    assert "invalid or missing object identity" in snapshot.observations["tree"].reason
+    assert not any(request.url.path.endswith(invalid_blob) for request in api.requests)
+
+
+@pytest.mark.parametrize("text", ["", "# Readme\r\n\nExample\n"])
+def test_utf8_bom_is_preserved_through_collection_and_json_round_trip(api, text):
+    raw = b"\xef\xbb\xbf" + text.encode("utf-8")
+    sha = api.file("README.md", raw)
+    snapshot = api.snapshot()
+    for result in (snapshot, RepositoryContext.model_validate_json(snapshot.model_dump_json())):
+        file = result.files[Path("README.md")]
+        assert file.content is not None and file.content.startswith("\ufeff")
+        assert file.content.encode("utf-8") == raw
+        assert (
+            hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + file.content.encode()).hexdigest() == sha
+        )
+
+
+@pytest.mark.parametrize("full_name", [None, "other/repo", 123, {}])
+def test_saved_snapshot_rejects_missing_or_mismatched_metadata_identity(api, full_name):
+    from pydantic import ValidationError
+
+    data = api.snapshot().model_dump(mode="json")
+    metadata = data["observations"]["repository"]["value"]
+    if full_name is None:
+        metadata.pop("full_name")
+    else:
+        metadata["full_name"] = full_name
+    with pytest.raises(ValidationError, match="metadata identity"):
+        RepositoryContext.model_validate_json(json.dumps(data))
+
+
+@pytest.mark.parametrize("repository", ["acme/demo", "github.example:8443/acme/demo"])
+def test_saved_snapshot_accepts_equivalent_metadata_identity_on_each_host(api, repository):
+    data = api.snapshot().model_dump(mode="json")
+    data["repository"] = repository
+    data["observations"]["repository"]["value"]["full_name"] = "Acme/DeMo"
+    assert RepositoryContext.model_validate_json(json.dumps(data)).repository == repository
+
+
+@pytest.mark.parametrize(
+    "status,content,valid",
+    [
+        ("available", None, False),
+        ("available", "", True),
+        ("available", "Example", True),
+        ("unavailable", None, True),
+        ("unavailable", "", False),
+        ("unavailable", "Example", False),
+    ],
+)
+def test_saved_snapshot_file_status_and_content_must_agree(api, status, content, valid):
+    from pydantic import ValidationError
+
+    api.file("README.md", content or "")
+    data = api.snapshot().model_dump(mode="json")
+    data["files"]["README.md"].update(status=status, content=content)
+    if valid:
+        assert (
+            RepositoryContext.model_validate_json(json.dumps(data)).files[Path("README.md")].status == status
+        )
+    else:
+        with pytest.raises(ValidationError, match="availability"):
+            RepositoryContext.model_validate_json(json.dumps(data))

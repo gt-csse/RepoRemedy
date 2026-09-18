@@ -5,6 +5,10 @@ This first PR adds commit-pinned repository evidence and separately recorded liv
 GitHub observations. It adds no CLI command. Catalog input resolution and concrete
 proposal generation follow in the next two PRs; publication remains separate.
 
+The [models and collection function](../src/RepoRemedy/context/repository_context.py)
+also document these contracts beside their definitions. Keep this guide and those
+docstrings aligned when changing collection behavior.
+
 ## Internal API
 
 ```python
@@ -17,6 +21,7 @@ with httpx.Client(trust_env=False) as client:
 ```
 
 `ref` accepts a branch or full recorded commit SHA and defaults to `main`.
+Git identities accept uppercase or lowercase hex and are normalized to lowercase.
 Branches resolve once, followed by commit, tree and blob reads using immutable
 SHAs. Missing revisions are errors, with no silent fallback. The future `propose`
 command will choose the audit's recorded commit when available, otherwise `main`.
@@ -81,10 +86,22 @@ artifact, not a public issue body.
 See [the live context test](live-context-test.md) for an opt-in run against a real
 GitHub fixture, including setup constraints and collection coverage.
 
+## Snapshot consistency
+
+Repository paths and file-map keys are `Path` objects in Python and POSIX strings
+in JSON. Blob content preserves a UTF-8 BOM so re-encoding it reproduces the bytes
+whose Git identity was checked.
+
+A missing or mismatched tree-response SHA discards that response before processing
+entries. An invalid entry SHA marks the inventory incomplete while collection
+continues for other valid entries. Saved snapshots require repository metadata to
+match the canonical repository identity, and file availability must agree with
+content presence in both directions. Empty content is valid for an available file.
+
 ## Validation
 
 ```shell
-uv run pytest tests/repository_context_test.py --no-cov
+uv run pytest tests/repository_context_test.py tests/github_test.py --no-cov
 ```
 
 Tests cover branch/commit resolution, Enterprise hosts and ports, immutable blob

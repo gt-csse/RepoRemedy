@@ -133,10 +133,13 @@ hosted models; keep credentials out of artifacts and treat generated content as 
 
 ## Repository context
 
-The internal [context collection service](repository-context.md) retrieves files
+The internal [context models and collection service](../src/RepoRemedy/context/repository_context.py) retrieves files
 at a resolved commit and separately records live GitHub observations. It supports
 GitHub.com and Enterprise identities. Catalog input resolution and the `propose`
 command follow in subsequent PRs; there is no separate context CLI command.
+API details are available in the [context guide](repository-context.md) and beside
+the definitions. Live-test instructions are in the [test guide](live-context-test.md)
+and [the integration test module](../tests/live/repository_context_test.py).
 
 ## Non-LLM templates
 
