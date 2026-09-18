@@ -155,10 +155,37 @@ continues for other valid entries. Saved snapshots require repository metadata t
 match the canonical repository identity, and file availability must agree with
 content presence in both directions. Empty content is valid for an available file.
 
+## Internal service contracts
+
+`load_catalog()` returns a `LoadedCatalog` dataclass with `remedies` and `sha256`.
+`resolve_inputs()` returns a `ResolvedInputs` dataclass with `values` and
+`missing_inputs`. Named fields make the intermediate results explicit;
+`InputResolution` remains the Pydantic model for saved JSON.
+
+Catalog destinations use the same `RepositoryPath` type as collected paths:
+Python callers receive `Path` objects, and JSON and template text use POSIX strings.
+Packaged body/template names remain string resource identifiers, read through
+`read_asset()`; they are not local filesystem paths. Invalid destination syntax
+is checked before path conversion can normalize separators.
+
+Resolution's `commit_sha` reuses the collector's `GitSha` validation. Commit
+comparisons ignore hex case, so uppercase report SHAs do not create false mismatch
+notices. Git identities and SHA-256 artifact digests serve different purposes.
+
+Input extraction uses `find_matching_files()`, `_extract_section()` and
+`_describe_observed_state()`. Heading extraction ignores a leading BOM for matching
+while retaining the original snapshot content. Evidence supplies facts, never
+maintainer approval; missing and conflicting values remain explicit.
+
+Tests follow the modules: `catalog_test.py` checks catalog declarations and assets,
+`inputs_test.py` checks evidence extraction, and `resolve_test.py` checks route
+resolution and saved provenance. Shared fixtures live in `remedy_fixtures.py`.
+These contracts are also documented beside the types and functions in the code.
+
 ## Validation
 
 ```shell
-uv run pytest tests/repository_context_test.py tests/github_test.py tests/context_inputs_test.py --no-cov
+uv run pytest tests/repository_context_test.py tests/github_test.py tests/catalog_test.py tests/inputs_test.py tests/resolve_test.py --no-cov
 ```
 
 Tests cover immutable context collection, all catalog input declarations, missing

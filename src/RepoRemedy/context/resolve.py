@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from RepoRemedy.catalog import load_catalog
 from RepoRemedy.context.github import ContextError
+from RepoRemedy.context.repository_context import GitSha  # noqa: TC001 - runtime model
 from RepoRemedy.context.inputs import ResolvedInput, resolve_inputs
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ class InputResolution(BaseModel):
 
     schema_version: Literal[1] = 1
     repository: str
-    commit_sha: str
+    commit_sha: GitSha
     report_sha256: str
     context_sha256: str
     catalog_sha256: str
@@ -49,11 +50,17 @@ def resolve_template_inputs(
     context: RepositoryContext,
     supplied: dict[str, dict[str, str]] | None = None,
 ) -> InputResolution:
-    """Resolve both declared routes, keeping unknown checks and missing decisions visible."""
+    """Resolve both declared routes, keeping unknown checks and missing decisions visible.
+
+    This operation combines catalog inputs with explicit user values; it does not
+    select routes, render proposals or establish approval. Multi-part intermediate
+    results use named dataclass fields; InputResolution is the saved JSON contract.
+    """
     if report.repository != context.repository:
         message = "Report and context identify different repositories"
         raise ContextError(message)
-    remedies, digest = load_catalog()
+    catalog = load_catalog()
+    remedies = catalog.remedies
     supplied = supplied or {}
     for identifier, fields in supplied.items():
         if identifier not in remedies:
@@ -94,7 +101,9 @@ def resolve_template_inputs(
         for kind, route in (("issue", remedy.issue), ("pr", remedy.pr)):
             if route is None:
                 continue
-            values, missing = resolve_inputs(context, identifier, remedy, route, issue)
+            resolved_inputs = resolve_inputs(context, identifier, remedy, route, issue)
+            values = resolved_inputs.values
+            missing = resolved_inputs.missing_inputs
             for key, value in supplied.get(identifier, {}).items():
                 if key in route.required_inputs:
                     values[key] = ResolvedInput(value=value, source="user input; approval not established")
@@ -117,7 +126,7 @@ def resolve_template_inputs(
         "Both declared routes are represented. Rendering, route selection, guard evaluation and publication are deferred.",
         "Live settings are observations from collection time, not historical settings at the recorded commit.",
     ]
-    if report.source.audited_commit and report.source.audited_commit != context.commit_sha:
+    if report.source.audited_commit and report.source.audited_commit.lower() != context.commit_sha:
         notices.append(
             "The report's audited commit differs from the context commit; findings must be rechecked against the reviewed state."
         )
@@ -126,7 +135,7 @@ def resolve_template_inputs(
         commit_sha=context.commit_sha,
         report_sha256=report.source.sha256,
         context_sha256=hashlib.sha256(context.model_dump_json().encode()).hexdigest(),
-        catalog_sha256=digest,
+        catalog_sha256=catalog.sha256,
         templates=resolved,
         notices=notices,
     )

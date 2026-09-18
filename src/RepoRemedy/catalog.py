@@ -1,6 +1,7 @@
 # noqa: CPY001
 """Load and validate packaged non-LLM remedy definitions."""
 
+from dataclasses import dataclass
 import hashlib
 import re
 from importlib.resources import files
@@ -9,18 +10,32 @@ from string import Template
 import tomllib
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from RepoRemedy.context.github import ContextError
+from RepoRemedy.context.repository_context import RepositoryPath  # noqa: TC001 - runtime model
 
 
 class ProposedFile(BaseModel):
-    """A repository destination and packaged source file."""
+    """A typed repository destination and a packaged asset name.
+
+    Destinations serialize as POSIX strings; template names identify package
+    resources rather than files on the local filesystem.
+    """
 
     model_config = ConfigDict(extra="forbid")
-    path: str
+    path: RepositoryPath
     template: str
     operation: Literal["create"]
+
+    @field_validator("path", mode="before")
+    @classmethod
+    def validate_destination(cls, value: object) -> object:
+        """Reject non-portable syntax before Path can normalize separators."""
+        if isinstance(value, str) and ("\\" in value or ":" in value):
+            message = "Unsafe proposed file destination"
+            raise ContextError(message)
+        return value
 
 
 class Route(BaseModel):
@@ -51,7 +66,7 @@ BODY_TYPES = {
 }
 
 
-def asset(folder: str, name: str) -> str:
+def read_asset(folder: str, name: str) -> str:
     """Read a packaged body or proposed-file asset, including in installed wheels."""
     if (
         folder not in {"bodies", "files"}
@@ -76,7 +91,7 @@ def _validate_route(remedy: Remedy, route: Route, kind: str) -> None:
         message = "Invalid route input declarations or issue-only fields"
         raise ContextError(message)
     fixed = {"response"} | ({"change_summary"} if kind == "pr" else set())
-    texts = [route.title, asset("bodies", route.body)]
+    texts = [route.title, read_asset("bodies", route.body)]
     if kind == "pr" and (
         set(route.guards) != {"confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"}
         or not route.files
@@ -85,16 +100,16 @@ def _validate_route(remedy: Remedy, route: Route, kind: str) -> None:
         message = "Incomplete PR route"
         raise ContextError(message)
     for file in route.files:
-        path = PurePosixPath(file.path)
+        path = file.path
         if (
             path.is_absolute()
             or any(p.lower() in {"..", ".git"} for p in path.parts)
-            or "\\" in file.path
-            or ":" in file.path
+            or "\\" in file.path.as_posix()
+            or ":" in file.path.as_posix()
         ):
             message = "Unsafe proposed file destination"
             raise ContextError(message)
-        texts.append(asset("files", file.template))
+        texts.append(read_asset("files", file.template))
     used = set()
     for text in texts:
         template = Template(text)
@@ -111,8 +126,21 @@ def _validate_route(remedy: Remedy, route: Route, kind: str) -> None:
         raise ContextError(message)
 
 
-def load_catalog() -> tuple[dict[str, Remedy], str]:
-    """Validate catalog contracts and identify all packaged content by one digest."""
+@dataclass
+class LoadedCatalog:
+    """Validated definitions and the digest of their packaged source assets."""
+
+    remedies: dict[str, Remedy]
+    sha256: str
+
+
+def load_catalog() -> LoadedCatalog:
+    """Validate declarations and return definitions with their asset digest.
+
+    The digest includes catalogs, bodies and file templates, so downstream
+    artifacts can identify the content used to resolve or render a remedy.
+    Package resources also work when the project is installed from a wheel.
+    """
     root = files("RepoRemedy").joinpath("templates")
     remedies: dict[str, Remedy] = {}
     sources = set()
@@ -149,4 +177,4 @@ def load_catalog() -> tuple[dict[str, Remedy], str]:
                 if remedy.pr:
                     _validate_route(remedy, remedy.pr, "pr")
                 remedies[identifier] = remedy
-    return remedies, digest.hexdigest()
+    return LoadedCatalog(remedies=remedies, sha256=digest.hexdigest())

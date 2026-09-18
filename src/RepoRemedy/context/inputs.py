@@ -1,6 +1,7 @@
 # noqa: CPY001
 """Resolve known template inputs with evidence, retaining missing decisions explicitly."""
 
+from dataclasses import dataclass
 import json
 import re
 from typing import TYPE_CHECKING
@@ -75,7 +76,15 @@ class ResolvedInput(BaseModel):
     source: str
 
 
-def matching_files(context: RepositoryContext, remedy_id: str) -> list[Path]:
+@dataclass
+class ResolvedInputs:
+    """Values and unresolved requirements for one catalog route; neither implies approval."""
+
+    values: dict[str, ResolvedInput]
+    missing_inputs: dict[str, str]
+
+
+def find_matching_files(context: RepositoryContext, remedy_id: str) -> list[Path]:
     """Locate file evidence including alternate community locations and issue forms."""
     stem = FILE_STEMS.get(remedy_id)
     if stem is None:
@@ -89,7 +98,12 @@ def matching_files(context: RepositoryContext, remedy_id: str) -> list[Path]:
     )
 
 
-def _section(context: RepositoryContext, names: tuple[str, ...]) -> ResolvedInput | None:
+def _extract_section(context: RepositoryContext, names: tuple[str, ...]) -> ResolvedInput | None:
+    """Extract one unambiguous heading value from available repository guidance.
+
+    Ignore a leading BOM for heading recognition without changing saved content.
+    Conflicting sections remain unresolved rather than choosing a file arbitrarily.
+    """
     candidates = []
     for path, file in context.files.items():
         if file.status != "available" or not file.content:
@@ -117,10 +131,11 @@ def _section(context: RepositoryContext, names: tuple[str, ...]) -> ResolvedInpu
     return candidates[0] if len(values) == 1 else None
 
 
-def _observed(context: RepositoryContext, remedy_id: str, issue: Issue) -> ResolvedInput:
+def _describe_observed_state(context: RepositoryContext, remedy_id: str, issue: Issue) -> ResolvedInput:
+    """Describe file evidence or live observations without inferring desired policy."""
     if remedy_id in FILE_STEMS:
         value = {
-            "matching_paths": [path.as_posix() for path in matching_files(context, remedy_id)],
+            "matching_paths": [path.as_posix() for path in find_matching_files(context, remedy_id)],
             "tree_complete": context.tree_complete,
         }
         return ResolvedInput(value=json.dumps(value, sort_keys=True), source=f"tree:{context.tree_sha}")
@@ -191,11 +206,15 @@ def resolve_inputs(
     remedy: Remedy,
     route: Route,
     issue: Issue,
-) -> tuple[dict[str, ResolvedInput], dict[str, str]]:
-    """Populate factual inputs; preserve the distinction between evidence and policy."""
+) -> ResolvedInputs:
+    """Return factual inputs and reasons for unresolved route requirements.
+
+    Repository evidence supplies facts, never approval or policy decisions.
+    Paths become POSIX strings only when inserted into template text or JSON.
+    """
     _, web, _ = get_repository_address(context.repository)
     target = (
-        ", ".join(f.path for f in remedy.pr.files)
+        ", ".join(f.path.as_posix() for f in remedy.pr.files)
         if remedy.pr
         else f"{web} (branch {context.settings_branch})"
     )
@@ -205,7 +224,7 @@ def resolve_inputs(
         "check": ResolvedInput(value=issue.check, source="report"),
         "evidence": ResolvedInput(value=issue.evidence, source=f"report:{issue.location}"),
         "target": ResolvedInput(value=target, source="catalog"),
-        "observed_state": _observed(context, remedy_id, issue),
+        "observed_state": _describe_observed_state(context, remedy_id, issue),
         "verification_steps": ResolvedInput(
             value=f"Review the proposed response against repository guidance. {remedy.response}\n"
             f"After applying the change, verify the observed behavior and rerun {issue.origin} / {issue.check}. "
@@ -257,7 +276,7 @@ def resolve_inputs(
     missing = {}
     for key in route.required_inputs:
         if key in SECTIONS:
-            section_value = _section(context, SECTIONS[key])
+            section_value = _extract_section(context, SECTIONS[key])
             if section_value:
                 values[key] = section_value
         if key not in values:
@@ -266,4 +285,7 @@ def resolve_inputs(
                 if key in MAINTAINER_INPUTS
                 else "No unambiguous value found in the recorded repository context"
             )
-    return {key: values[key] for key in route.required_inputs if key in values}, missing
+    return ResolvedInputs(
+        values={key: values[key] for key in route.required_inputs if key in values},
+        missing_inputs=missing,
+    )
