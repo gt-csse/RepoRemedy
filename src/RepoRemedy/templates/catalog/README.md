@@ -2,7 +2,9 @@
 
 These catalogs map RepoAuditor (`RA`) and OpenSSF Scorecard (`OSSF`) findings to
 proposed responses. They contain 68 remedy definitions across five topic files.
-The definitions are data; rendering and publication are not yet implemented.
+The definitions are data. [`propose`](../../../../doc/repository-context.md) gathers
+repository context and uses them to create concrete issue or draft PR proposals.
+Publication remains a separate, planned step.
 
 ## Organization
 
@@ -77,35 +79,33 @@ Existing-file editing requires a future editing strategy. Issue/PR routes descri
 available proposals; they do not establish that a finding is actionable or that
 validation has run.
 
-## Runtime input resolution
-
-The internal [context and input services](../../../../doc/repository-context.md)
-validate catalog contracts and resolve required fields from repository evidence or
-explicit user inputs. Values retain their sources; missing inputs and unavailable
-findings stay visible. Both declared routes are resolved without choosing one.
-The next PR connects these services to `propose` and adds guards and rendering.
-
 ## Current limitations
 
 - The catalogs declare 25 distinct runtime input fields; each proposal requires
-  only its selected route's 5–10 fields. Context resolves available facts and
-  unambiguous documentation sections; missing or conflicting inputs remain explicit.
+  only its selected route's 5–10 fields. Context retrieval resolves available facts
+  and unambiguous documentation sections; missing or conflicting information remains explicit.
   Report data should provide identity and evidence; repository inspection should
   provide current state; remedy logic should provide instructions and verification
   guidance. Maintainers should supply missing facts and approve policy decisions.
-- Resolved inputs record sources, and supplied values must be nonempty strings.
-  Domain-specific validation is not implemented. Some
+- Catalog inputs have names; resolved values record their sources and must be
+  nonempty strings when user-supplied. Domain-specific input validators are not implemented. Some
   file assets require complete maintainer-supplied content. Presence alone does not
   establish that settings instructions are actionable or generated files are valid.
-- Check matching does not establish applicability. Runtime guard enforcement,
-  handling already-correct findings, issue-versus-PR selection and
-  combining overlapping findings remain to be implemented.
-- Separate proposal and publication steps still need a saved proposal record with
-  inspected repository state, template provenance, approvals and validation results.
-  Published evidence and inputs need field-specific handling to keep secrets out
-  of issues and PRs; literal substitution alone does not provide that protection.
-- Asset tests verify structural consistency. They do not yet verify end-to-end
-  remedy correctness, generated-file formats or publication behavior.
+- Check matching does not establish applicability. `propose` enforces file-creation
+  guards and preserves unavailable or stale evidence. Existing/alternate files and
+  uncertain absence require review. Automatic re-auditing of settings and engineering
+  checks, and merging overlapping findings, are not implemented.
+- `propose` chooses an eligible PR when its inputs are complete and explicitly
+  approved; otherwise it offers the issue route with reasons. Citation and CODEOWNERS
+  PRs remain blocked pending dedicated format/access validators. Their issue routes
+  remain available. `--route` can request a specific route without bypassing guards.
+- Saved proposals retain report, context and catalog provenance, rendered content,
+  file diffs, input approvals and readiness reasons. The future publisher must select
+  only ready content, recheck target state and duplicates, and obtain publication
+  confirmation. Input approval is not publication authorization.
+- Asset and proposal tests check structure, rendering and guards. They do not run
+  target repository commands or prove audit improvements. Review evidence and inputs
+  for private content before publication; local context must not be posted wholesale.
 
 ## Adding or updating a remedy
 
