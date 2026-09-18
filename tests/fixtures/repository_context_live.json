@@ -1,0 +1,8 @@
+{
+  "repository": "ketanbj/reporemedy-live-fixture",
+  "main_sha": "e85598fda47e932f9b3cefeb0e4dbaaf3d882391",
+  "recorded_sha": "af64e06b117ad849fb91095ad15d70593042a1fd",
+  "recorded_readme": "# Recorded fixture revision\n\nThis file exists only at the recorded commit.\n",
+  "support_main": "## Support\nMain revision: open a discussion with the fixture maintainer.\n",
+  "support_recorded": "## Support\nRecorded revision: contact the fixture maintainer.\n"
+}

@@ -117,7 +117,7 @@ classDiagram
 | --- | --- |
 | Runtime and packaging | Python 3.14+, uv and uv_build; MIT license. |
 | CLI | Typer subcommands: `RepoRemedy inspect REPORT --report-type TYPE --repo REPOSITORY`, with root `--help` and `--version`; install from the checkout until a release is published. |
-| Data and HTTP clients | Pydantic validates reports and issues. HTTPX remains planned for GitHub and model APIs. |
+| Data and HTTP clients | Pydantic validates reports and issues. HTTPX reads GitHub repository context; model APIs remain planned. |
 | `non-llm` | Default mode using fixed catalog responses. |
 | `local-llm` | Proposals generated through a configured Ollama endpoint. |
 | `llm` | Proposals generated through a configured hosted OpenAI-compatible endpoint. |
@@ -130,6 +130,16 @@ The root callback preserves this command structure while providing `--version`.
 
 All modes use the same review and publication flow. Show what context is sent to
 hosted models; keep credentials out of artifacts and treat generated content as untrusted.
+
+## Repository context
+
+The internal [context models and collection service](../src/RepoRemedy/context/repository_context.py) retrieves files
+at a resolved commit and separately records live GitHub observations. It supports
+GitHub.com and Enterprise identities. Catalog input resolution and the `propose`
+command follow in subsequent PRs; there is no separate context CLI command.
+API details are available in the [context guide](repository-context.md) and beside
+the definitions. Live-test instructions are in the [test guide](live-context-test.md)
+and [the integration test module](../tests/live/repository_context_test.py).
 
 ## Non-LLM templates
 
