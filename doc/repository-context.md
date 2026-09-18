@@ -1,9 +1,10 @@
-# Repository context collection
+# Repository context and catalog inputs
 
 Context collection is an internal service for the planned `propose` workflow.
-This first PR adds commit-pinned repository evidence and separately recorded live
-GitHub observations. It adds no CLI command. Catalog input resolution and concrete
-proposal generation follow in the next two PRs; publication remains separate.
+The internal services collect commit-pinned files and live GitHub observations,
+validate the packaged catalog, and resolve template inputs with their sources.
+Concrete proposal generation and the `propose` CLI follow in the next PR;
+publication remains separate. No context or input-resolution CLI is added.
 
 The [models and collection function](../src/RepoRemedy/context/repository_context.py)
 also document these contracts beside their definitions. Keep this guide and those
@@ -83,6 +84,62 @@ Authentication state still requires private verification. Repository files and
 report evidence may themselves contain sensitive data; the snapshot is a local
 artifact, not a public issue body.
 
+## How the 25 input fields are resolved
+
+Each selected route uses only its own required fields. Every resolved field
+contains a value and its source; unresolved fields contain a reason.
+
+| Fields | Resolution |
+| --- | --- |
+| `repository`, `origin`, `check`, `evidence` | Normalized report; repository identity must match the snapshot. |
+| `target` | Catalog destination paths or repository/branch target. |
+| `observed_state` | Matching file paths or relevant API observations, including availability; no applicability conclusion is inferred. |
+| `setting_location` | Host-aware repository settings URL; detailed setting navigation remains part of later remedy logic. |
+| `verification_steps` | Catalog-based review/rerun guidance; this is a plan, not evidence that checks ran. |
+| `affected_components` | Candidate workflow/manifest paths from the recorded tree; not a declaration that those files are defective. |
+| `project_name`, `project_summary` | Live repository metadata with that provenance explicitly recorded. |
+| `installation_instructions`, `usage_instructions`, `support_instructions` | Unambiguous matching Markdown sections from existing documentation. |
+| `development_setup`, `test_instructions`, `contribution_process` | Unambiguous matching Markdown sections from existing documentation. |
+| `security_reporting_instructions`, `supported_versions` | Unambiguous matching Markdown sections from existing documentation. |
+| `reported_expected_value` | Explicit supplied audit expectation; not guessed from narrative evidence or current settings. |
+| `approved_value`, `approved_license_text`, `approved_codeowners`, `approved_code_of_conduct`, `approved_citation_metadata` | Supplied by the user; fetching current content does not establish maintainer approval. |
+
+Section extraction uses Markdown headings, not semantic inference. Missing,
+unreadable or conflicting sections remain unresolved. Raw relevant files are
+retained so later logic can support additional formats and project conventions.
+
+Optional user inputs are a JSON object keyed by stable remedy ID:
+
+```json
+{
+  "security-policy": {
+    "security_reporting_instructions": "Use the project's private reporting form.",
+    "supported_versions": "The 1.x release series."
+  },
+  "ra-require-approvals": {
+    "reported_expected_value": "2",
+    "approved_value": "2"
+  }
+}
+```
+
+The internal `resolve_template_inputs(report, context, supplied)` function validates
+repository identity and accepts optional supplied values keyed by remedy ID.
+Unknown keys, empty/non-string values and overrides of report/context-owned fields
+are rejected. User-supplied values do not establish maintainer approval.
+
+## Input-resolution result
+
+Both declared routes are resolved when a remedy supports both. Each record is
+`complete`, `needs-input`, `unavailable` or `unsupported`. Complete means all
+required fields have values; it does not establish applicability or approval.
+The result retains report/context/catalog digests, sourced values, missing-input
+reasons and report/context notices. A differing audited/context commit is explicit.
+
+There are no rendered titles, bodies or file changes in these internal results.
+Route selection, creation guards and rendering belong to the next PR, which will
+connect collection and resolution inside `propose`.
+
 See [the live context test](live-context-test.md) for an opt-in run against a real
 GitHub fixture, including setup constraints and collection coverage.
 
@@ -98,12 +155,38 @@ continues for other valid entries. Saved snapshots require repository metadata t
 match the canonical repository identity, and file availability must agree with
 content presence in both directions. Empty content is valid for an available file.
 
+## Internal service contracts
+
+`load_catalog()` returns a `LoadedCatalog` dataclass with `remedies` and `sha256`.
+`resolve_inputs()` returns a `ResolvedInputs` dataclass with `values` and
+`missing_inputs`. Named fields make the intermediate results explicit;
+`InputResolution` remains the Pydantic model for saved JSON.
+
+Catalog destinations use the same `RepositoryPath` type as collected paths:
+Python callers receive `Path` objects, and JSON and template text use POSIX strings.
+Packaged body/template names remain string resource identifiers, read through
+`read_asset()`; they are not local filesystem paths. Invalid destination syntax
+is checked before path conversion can normalize separators.
+
+Resolution's `commit_sha` reuses the collector's `GitSha` validation. Commit
+comparisons ignore hex case, so uppercase report SHAs do not create false mismatch
+notices. Git identities and SHA-256 artifact digests serve different purposes.
+
+Input extraction uses `find_matching_files()`, `_extract_section()` and
+`_describe_observed_state()`. Heading extraction ignores a leading BOM for matching
+while retaining the original snapshot content. Evidence supplies facts, never
+maintainer approval; missing and conflicting values remain explicit.
+
+Tests follow the modules: `catalog_test.py` checks catalog declarations and assets,
+`inputs_test.py` checks evidence extraction, and `resolve_test.py` checks route
+resolution and saved provenance. Shared fixtures live in `remedy_fixtures.py`.
+These contracts are also documented beside the types and functions in the code.
+
 ## Validation
 
 ```shell
-uv run pytest tests/repository_context_test.py tests/github_test.py --no-cov
+uv run pytest tests/repository_context_test.py tests/github_test.py tests/catalog_test.py tests/inputs_test.py tests/resolve_test.py --no-cov
 ```
 
-Tests cover branch/commit resolution, Enterprise hosts and ports, immutable blob
-reads, content integrity, incomplete trees, file limits, permission/rate-limit
-failures, pagination, credential filtering and snapshot validation.
+Tests cover immutable context collection, all catalog input declarations, missing
+and conflicting values, source protection, packaged assets and invalid catalogs.

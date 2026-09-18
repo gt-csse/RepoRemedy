@@ -207,6 +207,16 @@ class FileCollection:
     reason: str | None = None
 
 
+def is_manifest_path(path: Path) -> bool:
+    """Recognize dependency/build configuration for collection and remedy inputs."""
+    name = path.name.lower()
+    return (
+        name in MANIFEST_NAMES
+        or (name.startswith("requirements") and name.endswith(".txt"))
+        or name.endswith((".csproj", ".fsproj"))
+    )
+
+
 def is_relevant_path(path: Path) -> bool:
     """Select guidance, community files, workflows and dependency/build configuration."""
     lower = path.as_posix().lower()
@@ -214,9 +224,7 @@ def is_relevant_path(path: Path) -> bool:
     return (
         name.split(".")[0] in DOC_NAMES
         or name in {"agents.md", "codeowners", "citation.cff"}
-        or name in MANIFEST_NAMES
-        or (name.startswith("requirements") and name.endswith(".txt"))
-        or name.endswith((".csproj", ".fsproj"))
+        or is_manifest_path(path)
         or lower.startswith((".github/", ".circleci/"))
         or name in {".gitlab-ci.yml", ".travis.yml", "jenkinsfile", "azure-pipelines.yml"}
     )
