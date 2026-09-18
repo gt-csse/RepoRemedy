@@ -2,10 +2,13 @@
 
 from pathlib import Path
 
+import pytest
+
 from RepoRemedy.catalog import load_catalog
 from RepoRemedy.context.inputs import find_matching_files, resolve_inputs
 from RepoRemedy.context.repository_context import RepositoryFile
 from remedy_fixtures import make_report
+from repository_context_test import FakeGitHub
 
 
 def test_missing_and_conflicting_sections_are_not_invented(snapshot):
@@ -49,3 +52,42 @@ def test_alternate_paths_and_absent_candidates(snapshot):
         snapshot, "ossf-sast", remedy, remedy.issue, make_report("SAST", origin="OSSF").issues[0]
     )
     assert "affected_components" in result.missing_inputs
+
+
+@pytest.mark.parametrize("remedy_id", ["ra-license-file", "ra-license", "ossf-license"])
+def test_all_license_remedies_match_both_filename_stems(snapshot, remedy_id):
+    expected = [Path("LICENSE"), Path("docs/CoPyInG.txt"), Path("nested/License.md")]
+    snapshot.paths.extend([*reversed(expected), Path("LICENSES.md"), Path("copying-notes.txt")])
+    assert find_matching_files(snapshot, remedy_id) == expected
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "nested/PYPROJECT.toml",
+        "nested/package.json",
+        "nested/Cargo.toml",
+        "nested/go.mod",
+        "nested/pom.xml",
+        "nested/build.gradle.kts",
+        "nested/Gemfile",
+        "nested/composer.json",
+        "nested/requirements-dev.txt",
+        "nested/project.csproj",
+        "nested/project.fsproj",
+        "nested/uv.lock",
+        "nested/Makefile",
+        ".github/workflows/test.yml",
+    ],
+)
+def test_collected_manifests_and_workflows_are_affected_components(path):
+    api = FakeGitHub()
+    api.file(path, "Example configuration")
+    api.file("README.md", "Project guidance")
+    api.file("src/main.py", "Example source")
+    context = api.snapshot()
+    remedy = load_catalog().remedies["ossf-sast"]
+    result = resolve_inputs(
+        context, "ossf-sast", remedy, remedy.issue, make_report("SAST", origin="OSSF").issues[0]
+    )
+    assert result.values["affected_components"].value.splitlines()[1:] == [path]
