@@ -77,18 +77,28 @@ Existing-file editing requires a future editing strategy. Issue/PR routes descri
 available proposals; they do not establish that a finding is actionable or that
 validation has run.
 
+## Runtime input resolution
+
+The internal [context and input services](../../../../doc/repository-context.md)
+validate catalog contracts and resolve required fields from repository evidence or
+explicit user inputs. Values retain their sources; missing inputs and unavailable
+findings stay visible. Both declared routes are resolved without choosing one.
+The next PR connects these services to `propose` and adds guards and rendering.
+
 ## Current limitations
 
 - The catalogs declare 25 distinct runtime input fields; each proposal requires
-  only its selected route's 5–10 fields. Automatic input discovery is not implemented.
+  only its selected route's 5–10 fields. Context resolves available facts and
+  unambiguous documentation sections; missing or conflicting inputs remain explicit.
   Report data should provide identity and evidence; repository inspection should
   provide current state; remedy logic should provide instructions and verification
   guidance. Maintainers should supply missing facts and approve policy decisions.
-- Inputs currently have names but no declared types, sources or validators. Some
+- Resolved inputs record sources, and supplied values must be nonempty strings.
+  Domain-specific validation is not implemented. Some
   file assets require complete maintainer-supplied content. Presence alone does not
   establish that settings instructions are actionable or generated files are valid.
 - Check matching does not establish applicability. Runtime guard enforcement,
-  handling already-correct or unavailable findings, issue-versus-PR selection and
+  handling already-correct findings, issue-versus-PR selection and
   combining overlapping findings remain to be implemented.
 - Separate proposal and publication steps still need a saved proposal record with
   inspected repository state, template provenance, approvals and validation results.
