@@ -42,9 +42,20 @@ version. `OWNER/REPO` means GitHub.com; use an HTTPS URL or `HOST/OWNER/REPO` fo
 GitHub Enterprise. Enterprise hosts are retained in the output and Scorecard scan
 matching, including non-default HTTPS ports.
 
-The `inspect` command reads reports offline. A separate `publish` command is planned
-for publishing reviewed proposals as issues or draft PRs, with explicit confirmation.
-See [the design](doc/design.md) for the planned workflow.
+Gather context and create concrete remedy proposals from an audit report:
+
+```shell
+RepoRemedy propose report.json --report-type ossf-scorecard --repo OWNER/REPO > proposals.json
+```
+
+`propose` reads the audited commit when recorded, otherwise `main`. Use `--ref main`
+or a full commit SHA to select a revision explicitly. It resolves catalog inputs
+and renders an issue or an eligible draft PR, including file contents and diffs.
+Missing inputs and blocked proposals remain visible. Publication is a separate,
+planned `publish` step; `propose` makes no GitHub changes.
+
+See [proposing remedies](doc/repository-context.md) for authentication, collected
+context, maintainer inputs, PR guards and the saved proposal contract.
 
 <!-- Content below this delimiter will be copied to the generated README.md file. DO NOT REMOVE THIS COMMENT, as it will cause regeneration to fail. -->
 

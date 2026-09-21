@@ -1,37 +1,41 @@
-# Repository context and catalog inputs
+# Proposing remedies with repository context
 
-Context collection is an internal service for the planned `propose` workflow.
-The internal services collect commit-pinned files and live GitHub observations,
-validate the packaged catalog, and resolve template inputs with their sources.
-Concrete proposal generation and the `propose` CLI follow in the next PR;
-publication remains separate. No context or input-resolution CLI is added.
+`propose` reads an audit, gathers repository context, resolves catalog inputs and
+renders a concrete issue or eligible draft PR in one invocation. Context collection
+and input resolution are internal services, not separate CLI commands. `inspect`
+remains available for offline report inspection; publication will be a separate
+`publish` command.
 
 The [models and collection function](../src/RepoRemedy/context/repository_context.py)
 also document these contracts beside their definitions. Keep this guide and those
 docstrings aligned when changing collection behavior.
 
-## Internal API
+## Command
 
-```python
-import httpx
+Run from an installed package or prefix with `uv run` in a checkout:
 
-from RepoRemedy.context import collect_context
-
-with httpx.Client(trust_env=False) as client:
-    context = collect_context("OWNER/REPO", client, ref="main")
+```shell
+RepoRemedy propose report.json --report-type ossf-scorecard \
+  --repo OWNER/REPO > proposals.json
+RepoRemedy propose report.txt --report-type repoauditor \
+  --repo https://github.gatech.edu/OWNER/REPO --ref main \
+  --token-env ENTERPRISE_TOKEN > proposals.json
 ```
 
-`ref` accepts a branch or full recorded commit SHA and defaults to `main`.
+Without `--ref`, context uses the audit's recorded commit, or `main` when no commit
+was recorded. Use `--ref main`, another branch, or a full commit SHA to choose
+explicitly. A differing audited/context commit marks otherwise ready proposals
+`needs-review`. Missing revisions are errors; there is no silent fallback.
+Branches resolve once, then commit, tree and blob reads use immutable SHAs. Blob
+content is checked against its Git identity. No repository code is executed.
 Git identities accept uppercase or lowercase hex and are normalized to lowercase.
-Branches resolve once, followed by commit, tree and blob reads using immutable
-SHAs. Missing revisions are errors, with no silent fallback. The future `propose`
-command will choose the audit's recorded commit when available, otherwise `main`.
 
-Use `https://HOST/OWNER/REPO` for GitHub Enterprise, including a non-default HTTPS
-port when needed. Pass an optional `token` for the requested host. GitHub.com uses
-`api.github.com`; Enterprise uses that host with `/api/v3`. Requests never follow
-redirects or server-provided pagination URLs. Authentication values are excluded
-from collected API metadata and error messages.
+GitHub.com shorthand and Enterprise host/port identities are supported. GitHub.com
+uses `api.github.com`; Enterprise uses the chosen host with `/api/v3`. The default
+token environment variable is `REPOREMEDY_TOKEN`, optional for public reads;
+`--token-env` selects a variable containing a token for the requested host.
+Requests do not follow redirects or server-provided pagination URLs. Credentials
+are excluded from collected API metadata and error messages.
 
 ## Why collection is a function
 
@@ -123,22 +127,67 @@ Optional user inputs are a JSON object keyed by stable remedy ID:
 }
 ```
 
-The internal `resolve_template_inputs(report, context, supplied)` function validates
-repository identity and accepts optional supplied values keyed by remedy ID.
+```shell
+RepoRemedy propose report.txt --report-type repoauditor --repo OWNER/REPO \
+  --inputs maintainer-inputs.json --approve-inputs security-policy > proposals.json
+```
+
 Unknown keys, empty/non-string values and overrides of report/context-owned fields
-are rejected. User-supplied values do not establish maintainer approval.
+are rejected. User values remain literal, including placeholder-like text. Their
+provenance identifies user input but does not establish approval. Input files must
+not contain secrets or authenticated webhook URLs.
 
-## Input-resolution result
+## Route selection and readiness
 
-Both declared routes are resolved when a remedy supports both. Each record is
-`complete`, `needs-input`, `unavailable` or `unsupported`. Complete means all
-required fields have values; it does not establish applicability or approval.
-The result retains report/context/catalog digests, sourced values, missing-input
-reasons and report/context notices. A differing audited/context commit is explicit.
+The default `--route auto` selects a PR only when all declared inputs are complete,
+all file-creation guards pass, and `--approve-inputs REMEDY_ID` explicitly approves
+its content inputs. Repeat that option for multiple remedies. This approves inputs,
+not publication, and does not bypass missing evidence or file validation. Setting
+issues containing an `approved_value` also require explicit input approval.
 
-There are no rendered titles, bodies or file changes in these internal results.
-Route selection, creation guards and rendering belong to the next PR, which will
-connect collection and resolution inside `propose`.
+For a PR, the tree must be complete, targets absent, and supported alternate files
+absent. A live community profile must also be readable and show no matching shared
+file for applicable community assets. Existing files, symlinks, submodules or
+ambiguous parent directories cannot be overwritten. Citation and CODEOWNERS PRs
+require future dedicated format/access validators and currently use the issue route.
+
+When a PR is ineligible, `auto` renders the catalog issue and records why it did not
+choose the PR. `--route issue` requests issues only; `--route pr` keeps missing inputs
+and failed guards visible on the requested PR instead of falling back. It cannot
+force an unsupported or unsafe PR.
+
+Each proposal has one selected route and one status:
+
+| Status | Meaning |
+| --- | --- |
+| `ready` | Complete issue or draft PR content for the separate publication step. |
+| `needs-input` | Required values are missing; no partial template is rendered. |
+| `needs-review` | Evidence, input approval or validation does not establish readiness; any rendered content remains blocked. |
+| `unavailable` | The audit did not establish a finding; no content is generated. |
+| `unsupported` | No catalog mapping exists; the finding remains visible without content. |
+
+`ready` means ready issue/draft PR content, not that repository checks passed or
+that publication is authorized. Settings and engineering issues request specific
+follow-up work; this non-LLM implementation does not repair code or rerun auditors.
+File presence can indicate an existing or incomplete remedy, so such findings
+require review instead of assuming success or creating a duplicate file.
+
+## Saved proposal bundle
+
+The JSON output includes repository identity, `base_commit`, the source report,
+collected context, SHA-256 digests for report/context/catalog assets, explicit input
+approvals and a `proposals` list. Each proposal retains its finding, selected route,
+sourced inputs, missing values, guard results and readiness reasons. Its `content`
+contains the rendered title/body and, for PRs, exact new file contents, create
+operations and unified diffs. PR content is marked `draft`.
+
+Substitution is single-pass: placeholder-like text inside supplied values remains
+literal. Packaged assets are unchanged. No GitHub writes occur.
+
+Keep the bundle local for review. A future publisher must use only selected `ready`
+proposal content, not the entire context or report. It must recheck target state,
+permissions and duplicates and obtain publication confirmation. Existing-file edits,
+check-specific re-auditing and combining overlapping findings remain future work.
 
 See [the live context test](live-context-test.md) for an opt-in run against a real
 GitHub fixture, including setup constraints and collection coverage.
@@ -182,11 +231,27 @@ Tests follow the modules: `catalog_test.py` checks catalog declarations and asse
 resolution and saved provenance. Shared fixtures live in `remedy_fixtures.py`.
 These contracts are also documented beside the types and functions in the code.
 
-## Validation
+Proposal selection returns a `RouteSelection` dataclass with `inputs`, `guards`
+and `reasons`. `_evaluate_file_guards()`, `_select_route()`, `_render_content()`
+and `_build_proposal()` name the steps explicitly. `FileChange.path` uses
+`RepositoryPath` and `ProposalBundle.base_commit` uses `GitSha`; saved paths and
+diff headers remain POSIX strings. `propose_test.py` exercises the service and
+`cli_test.py` exercises command invocation and its input/output boundaries.
+
+## Validation and API references
+
+Tests cover branch/commit resolution, Enterprise hosts and ports, immutable blob
+reads, content integrity, incomplete trees, file limits, permission/rate-limit
+failures, pagination, credential filtering, catalog contracts, all catalog input
+sets, missing/conflicting inputs, rendering, route selection, creation guards and CLI errors.
 
 ```shell
-uv run pytest tests/repository_context_test.py tests/github_test.py tests/catalog_test.py tests/inputs_test.py tests/resolve_test.py --no-cov
+uv run pytest tests/repository_context_test.py tests/github_test.py tests/catalog_test.py tests/inputs_test.py tests/resolve_test.py tests/propose_test.py tests/cli_test.py --no-cov
 ```
 
-Tests cover immutable context collection, all catalog input declarations, missing
-and conflicting values, source protection, packaged assets and invalid catalogs.
+The collector follows GitHub's [Git tree](https://docs.github.com/en/rest/git/trees)
+and [blob](https://docs.github.com/en/rest/git/blobs) APIs for immutable file evidence,
+and the [branch protection](https://docs.github.com/en/rest/branches/branch-protection)
+and [active branch rules](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch)
+APIs for current protection observations. Repository metadata and security feature
+availability follow the [repository API](https://docs.github.com/en/rest/repos/repos).
