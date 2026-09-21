@@ -58,7 +58,7 @@ def test_alternate_paths_and_absent_candidates(snapshot):
 def test_all_license_remedies_match_both_filename_stems(snapshot, remedy_id):
     expected = [Path("LICENSE"), Path("docs/CoPyInG.txt"), Path("nested/License.md")]
     snapshot.paths.extend([*reversed(expected), Path("LICENSES.md"), Path("copying-notes.txt")])
-    assert find_matching_files(snapshot, remedy_id) == expected
+    assert find_matching_files(snapshot, remedy_id) == sorted(expected)
 
 
 @pytest.mark.parametrize(
