@@ -116,8 +116,8 @@ classDiagram
 | Area | Choice |
 | --- | --- |
 | Runtime and packaging | Python 3.14+, uv and uv_build; MIT license. |
-| CLI | Typer subcommands: `inspect`, `propose`, and `propose-batch`, with root `--help` and `--version`; install from the checkout until a release is published. |
-| Data and HTTP clients | Pydantic validates reports and issues. HTTPX reads GitHub repository context; model APIs remain planned. |
+| CLI | Typer subcommands: `inspect`, `propose`, `propose-batch`, and `publish`, with root `--help` and `--version`; install from the checkout until a release is published. |
+| Data and HTTP clients | Pydantic validates reports and issues. HTTPX reads repository context and publishes selected remedies; model APIs remain planned. |
 | `non-llm` | Default mode using fixed catalog responses. |
 | `local-llm` | Proposals generated through a configured Ollama endpoint. |
 | `llm` | Proposals generated through a configured hosted OpenAI-compatible endpoint. |
@@ -126,8 +126,8 @@ classDiagram
 `inspect` reads reports offline. `propose` gathers context and creates saved issue/PR
 content with evidence, inputs and readiness status. [`propose-batch`](batch.md) uses
 the same catalog workflow for each repository/report pair, preserving artifacts and
-continuing after individual failures. Publication will be a separate `publish` command
-that consumes reviewed proposals and requires explicit confirmation. Keeping these
+continuing after individual failures. The separate [`publish` command](publishing.md)
+consumes explicit reviewed selections and requires confirmation. Keeping these
 actions separate lets users inspect and review results before choosing to publish.
 The root callback preserves this command structure while providing `--version`.
 
@@ -255,8 +255,10 @@ redirect it to a local file for review. The bundle includes rendered titles, bod
 file content/diffs, source evidence, commit context and readiness reasons, leaving
 packaged templates unchanged. Unknown/unavailable findings are retained without
 rendering. Missing inputs, uncertain file absence and differing audited/context
-commits prevent readiness. A future publisher must consume only selected `ready`
-proposal content, revalidate target state and reconcile publication receipts on retry.
+commits prevent readiness. `publish` consumes only selected `ready`
+proposal content, revalidates target state, checks duplicate issues/PRs and persists
+publication receipts. See [publishing remedies](publishing.md) for recovery and
+concurrency limits.
 
 **PR guards:** `confirmed_gap` means current evidence supports the change;
 `target_absent` requires the destination not to exist; `no_equivalent_file` requires

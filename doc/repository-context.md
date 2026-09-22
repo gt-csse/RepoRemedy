@@ -3,8 +3,8 @@
 `propose` reads an audit, gathers repository context, resolves catalog inputs and
 renders a concrete issue or eligible draft PR in one invocation. Context collection
 and input resolution are internal services, not separate CLI commands. `inspect`
-remains available for offline report inspection; publication will be a separate
-`publish` command.
+remains available for offline report inspection; publication uses the separate
+[`publish` command](publishing.md) with explicit selection and confirmation.
 
 The [models and collection function](../src/RepoRemedy/context/repository_context.py)
 also document these contracts beside their definitions. Keep this guide and those
@@ -184,9 +184,9 @@ operations and unified diffs. PR content is marked `draft`.
 Substitution is single-pass: placeholder-like text inside supplied values remains
 literal. Packaged assets are unchanged. No GitHub writes occur.
 
-Keep the bundle local for review. A future publisher must use only selected `ready`
-proposal content, not the entire context or report. It must recheck target state,
-permissions and duplicates and obtain publication confirmation. Existing-file edits,
+Keep the bundle local for review. [`publish`](publishing.md) uses only selected
+`ready` proposal content, rechecks target state, permissions and duplicates, and
+requires explicit publication confirmation. It persists receipts for recovery. Existing-file edits,
 check-specific re-auditing and combining overlapping findings remain future work.
 
 See [the live context test](live-context-test.md) for an opt-in run against a real
