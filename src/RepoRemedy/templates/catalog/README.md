@@ -4,7 +4,8 @@ These catalogs map RepoAuditor (`RA`) and OpenSSF Scorecard (`OSSF`) findings to
 proposed responses. They contain 68 remedy definitions across five topic files.
 The definitions are data. [`propose`](../../../../doc/repository-context.md) gathers
 repository context and uses them to create concrete issue or draft PR proposals.
-Publication remains a separate, planned step.
+[`publish`](../../../../doc/publishing.md) publishes selected, confirmed remedies
+and persists receipts.
 
 ## Organization
 
@@ -100,9 +101,9 @@ validation has run.
   PRs remain blocked pending dedicated format/access validators. Their issue routes
   remain available. `--route` can request a specific route without bypassing guards.
 - Saved proposals retain report, context and catalog provenance, rendered content,
-  file diffs, input approvals and readiness reasons. The future publisher must select
-  only ready content, recheck target state and duplicates, and obtain publication
-  confirmation. Input approval is not publication authorization.
+  file diffs, input approvals and readiness reasons. `publish` selects only ready
+  content, rechecks target state and duplicates, requires explicit confirmation and
+  persists receipts. Input approval is not publication authorization.
 - Asset and proposal tests check structure, rendering and guards. They do not run
   target repository commands or prove audit improvements. Review evidence and inputs
   for private content before publication; local context must not be posted wholesale.
