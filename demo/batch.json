@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "reports": [
+    {
+      "report_type": "repoauditor",
+      "path": "reports/{owner}/{repo}/repoauditor.txt"
+    },
+    {
+      "report_type": "ossf-scorecard",
+      "path": "reports/{owner}/{repo}/scorecard.json"
+    }
+  ],
+  "repositories": [
+    {
+      "repository": "poloclub/transformer-explainer",
+      "ref": "bfe50afba10b9b560b84143ee1107d977defa74f"
+    },
+    {
+      "repository": "borglab/gtsam",
+      "ref": "4ffe7b13163e324391ccb6564830b37e4540df8f"
+    },
+    {
+      "repository": "vortexgpgpu/vortex",
+      "ref": "1cd71c4023e9fbc3f635fb3cae924722b9808f67"
+    },
+    {
+      "repository": "gt-tinker/qwerty",
+      "ref": "c5f1e6570be55fe23b84136470bfad1992cb8334"
+    },
+    {
+      "repository": "apache/airavata-custos",
+      "ref": "5d840613f48b8de29e30e16027633bdc3ee16b46"
+    },
+    {
+      "repository": "AI2Science/vizfold-foundation",
+      "ref": "745229dcb0b7eb5ed06ebf6678e99eded418b543"
+    },
+    {
+      "repository": "psi4/psi4",
+      "ref": "1cef8222bc5ed3c9a9ca80f180e438ab5c46c50f"
+    },
+    {
+      "repository": "MolSSI/QCSchema",
+      "ref": "5390e6f11d21847e4e7ca2ad14a97594f957cb2d"
+    },
+    {
+      "repository": "slimgroup/InvertibleNetworks.jl",
+      "ref": "f3c9b027eb780fb182cd547c4ebbe45dfa88d016"
+    },
+    {
+      "repository": "sharc-lab/Edge-MoE",
+      "ref": "984b23bd7e733335213f3a33eac6a3947872973f"
+    }
+  ]
+}

@@ -57,6 +57,16 @@ planned `publish` step; `propose` makes no GitHub changes.
 See [proposing remedies](doc/repository-context.md) for authentication, collected
 context, maintainer inputs, PR guards and the saved proposal contract.
 
+Generate proposals for several repositories using report-path templates:
+
+```shell
+RepoRemedy propose-batch demo/batch.json --output batch-results
+```
+
+The [batch workflow](doc/batch.md) uses the same remediation behavior as `propose`,
+preserves each repository's bundles and summary, and continues after input failures.
+Exit code `3` identifies partial failure; output directories must be new.
+
 <!-- Content below this delimiter will be copied to the generated README.md file. DO NOT REMOVE THIS COMMENT, as it will cause regeneration to fail. -->
 
 ## Installation

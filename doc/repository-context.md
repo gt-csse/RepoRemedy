@@ -238,6 +238,12 @@ and `_build_proposal()` name the steps explicitly. `FileChange.path` uses
 diff headers remain POSIX strings. `propose_test.py` exercises the service and
 `cli_test.py` exercises command invocation and its input/output boundaries.
 
+The shared [`propose_repository()` workflow](../src/RepoRemedy/workflow.py) reads the
+report and optional input file, collects context, and invokes proposal generation.
+Both `propose` and [`propose-batch`](batch.md) use it; callers control artifact storage
+and whether an input failure stops processing. `workflow_test.py` checks input-file
+bounds, and `batch_test.py` checks single/batch parity, isolation and partial results.
+
 ## Validation and API references
 
 Tests cover branch/commit resolution, Enterprise hosts and ports, immutable blob
@@ -246,7 +252,7 @@ failures, pagination, credential filtering, catalog contracts, all catalog input
 sets, missing/conflicting inputs, rendering, route selection, creation guards and CLI errors.
 
 ```shell
-uv run pytest tests/repository_context_test.py tests/github_test.py tests/catalog_test.py tests/inputs_test.py tests/resolve_test.py tests/propose_test.py tests/cli_test.py --no-cov
+uv run pytest tests/repository_context_test.py tests/github_test.py tests/catalog_test.py tests/inputs_test.py tests/resolve_test.py tests/propose_test.py tests/workflow_test.py tests/batch_test.py tests/cli_test.py --no-cov
 ```
 
 The collector follows GitHub's [Git tree](https://docs.github.com/en/rest/git/trees)

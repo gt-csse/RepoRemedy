@@ -116,7 +116,7 @@ classDiagram
 | Area | Choice |
 | --- | --- |
 | Runtime and packaging | Python 3.14+, uv and uv_build; MIT license. |
-| CLI | Typer subcommands: `RepoRemedy inspect REPORT --report-type TYPE --repo REPOSITORY`, with root `--help` and `--version`; install from the checkout until a release is published. |
+| CLI | Typer subcommands: `inspect`, `propose`, and `propose-batch`, with root `--help` and `--version`; install from the checkout until a release is published. |
 | Data and HTTP clients | Pydantic validates reports and issues. HTTPX reads GitHub repository context; model APIs remain planned. |
 | `non-llm` | Default mode using fixed catalog responses. |
 | `local-llm` | Proposals generated through a configured Ollama endpoint. |
@@ -124,7 +124,9 @@ classDiagram
 | Quality checks | Ruff, ty, pytest, pre-commit and GitHub Actions; 95% coverage gate. |
 
 `inspect` reads reports offline. `propose` gathers context and creates saved issue/PR
-content with evidence, inputs and readiness status. Publication will be a separate `publish` command
+content with evidence, inputs and readiness status. [`propose-batch`](batch.md) uses
+the same catalog workflow for each repository/report pair, preserving artifacts and
+continuing after individual failures. Publication will be a separate `publish` command
 that consumes reviewed proposals and requires explicit confirmation. Keeping these
 actions separate lets users inspect and review results before choosing to publish.
 The root callback preserves this command structure while providing `--version`.
@@ -134,7 +136,7 @@ hosted models; keep credentials out of artifacts and treat generated content as 
 
 ## Repository context
 
-Context gathering is an internal part of `propose`, not a separate command.
+Context gathering is internal to `propose` and `propose-batch`.
 Files are pinned to the audit's recorded commit (or `main` if none is recorded);
 `--ref` overrides that choice. Live GitHub settings are recorded separately.
 The same invocation resolves catalog inputs, selects a route, checks file-creation
