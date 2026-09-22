@@ -5,12 +5,12 @@ from collections import Counter
 from contextlib import suppress
 from pathlib import Path
 from string import Formatter
-from typing import Annotated, Literal
+from typing import Literal
 import os
 import tempfile
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from RepoRemedy.context.github import ContextError
 from RepoRemedy.context.repository_context import GitSha, RepositoryPath  # noqa: TC001 - runtime fields
@@ -62,7 +62,10 @@ class RepositoryJob(BaseModel):
     inputs: str | None = None
     route: RouteChoice = "auto"
     approve_inputs: list[str] = Field(default_factory=list)
-    token_env: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_][A-Za-z0-9_]*$")] = "REPOREMEDY_TOKEN"  # noqa: S105
+    token_env: str = Field(
+        default="REPOREMEDY_TOKEN",
+        pattern=r"^[A-Za-z_][A-Za-z0-9_]*$",
+    )
 
     @field_validator("inputs")
     @classmethod
