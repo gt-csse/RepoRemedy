@@ -51,8 +51,16 @@ RepoRemedy propose report.json --report-type ossf-scorecard --repo OWNER/REPO > 
 `propose` reads the audited commit when recorded, otherwise `main`. Use `--ref main`
 or a full commit SHA to select a revision explicitly. It resolves catalog inputs
 and renders an issue or an eligible draft PR, including file contents and diffs.
-Missing inputs and blocked proposals remain visible. Publication is a separate,
-planned `publish` step; `propose` makes no GitHub changes.
+Missing inputs and blocked proposals remain visible. `propose` makes no GitHub changes.
+Publish only reviewed selections with explicit confirmation:
+
+```shell
+RepoRemedy publish proposals.json --repo OWNER/REPO --select security-policy \
+  --receipts publication-receipts.json --confirm
+```
+
+See [publishing remedies](doc/publishing.md) for permissions, stale-content checks,
+duplicate prevention and receipt recovery.
 
 See [proposing remedies](doc/repository-context.md) for authentication, collected
 context, maintainer inputs, PR guards and the saved proposal contract.
