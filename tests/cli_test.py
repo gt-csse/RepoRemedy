@@ -41,7 +41,7 @@ def test_cli_propose_collects_and_renders_without_writing_to_github(monkeypatch,
 
 def test_cli_recorded_commit_default_and_explicit_ref_and_token(monkeypatch):
     source = make_report(commit=COMMIT)
-    monkeypatch.setattr("RepoRemedy.cli.read_report", lambda *args: source)
+    monkeypatch.setattr("RepoRemedy.workflow.read_report", lambda *args: source)
     captured = {}
     context = FakeGitHub().snapshot()
 
@@ -49,7 +49,7 @@ def test_cli_recorded_commit_default_and_explicit_ref_and_token(monkeypatch):
         captured.update(kwargs)
         return context
 
-    monkeypatch.setattr("RepoRemedy.cli.collect_context", collect)
+    monkeypatch.setattr("RepoRemedy.workflow.collect_context", collect)
     monkeypatch.setenv("ENTERPRISE_TOKEN", "PRIVATE")
     args = [
         "propose",
@@ -73,7 +73,7 @@ def test_cli_errors_do_not_leak_response_details(monkeypatch, failure):
     def collect(*args, **kwargs):
         raise failure
 
-    monkeypatch.setattr("RepoRemedy.cli.collect_context", collect)
+    monkeypatch.setattr("RepoRemedy.workflow.collect_context", collect)
     result = RUNNER.invoke(
         app, ["propose", str(AUDIT), "--report-type", "repoauditor", "--repo", "acme/demo"]
     )
@@ -84,6 +84,7 @@ def test_cli_errors_do_not_leak_response_details(monkeypatch, failure):
     "content,success",
     [
         ("not-json", False),
+        ("[" * 2000 + "]" * 2000, False),
         ("[]", False),
         ('{"unknown": {}}', False),
         ('{"ra-license-file": {"approved_license_text": "MIT"}}', True),
@@ -91,7 +92,7 @@ def test_cli_errors_do_not_leak_response_details(monkeypatch, failure):
 )
 def test_cli_input_files(monkeypatch, tmp_path, content, success):
     context = FakeGitHub().snapshot()
-    monkeypatch.setattr("RepoRemedy.cli.collect_context", lambda *args, **kwargs: context)
+    monkeypatch.setattr("RepoRemedy.workflow.collect_context", lambda *args, **kwargs: context)
     supplied = tmp_path / "inputs.json"
     supplied.write_text(content)
     result = RUNNER.invoke(
@@ -118,7 +119,7 @@ def test_cli_size_limit_precedes_network(monkeypatch, tmp_path):
     def unexpected(*args, **kwargs):
         pytest.fail("Should not collect context")
 
-    monkeypatch.setattr("RepoRemedy.cli.collect_context", unexpected)
+    monkeypatch.setattr("RepoRemedy.workflow.collect_context", unexpected)
     result = RUNNER.invoke(
         app,
         [
@@ -137,7 +138,7 @@ def test_cli_size_limit_precedes_network(monkeypatch, tmp_path):
 
 def test_cli_renders_approved_pr_in_one_invocation(monkeypatch, tmp_path):
     context = FakeGitHub().snapshot()
-    monkeypatch.setattr("RepoRemedy.cli.collect_context", lambda *args, **kwargs: context)
+    monkeypatch.setattr("RepoRemedy.workflow.collect_context", lambda *args, **kwargs: context)
     supplied = tmp_path / "inputs.json"
     supplied.write_text(
         json.dumps(

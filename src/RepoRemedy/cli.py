@@ -4,7 +4,6 @@
 from pathlib import Path  # noqa: TC003 - Typer resolves annotations at runtime
 from typing import Annotated
 
-import json
 import os
 
 import httpx
@@ -12,13 +11,14 @@ import typer
 from pydantic_core import PydanticSerializationError
 
 from RepoRemedy import __version__
-from RepoRemedy.context import collect_context
+from RepoRemedy.batch import run_batch
 from RepoRemedy.context.github import ContextError
-from RepoRemedy.propose import ProposalBundle, RouteChoice, propose_remedies
+from RepoRemedy.propose import ProposalBundle, RouteChoice
 from RepoRemedy.publication.publish import publish_remedies
 from RepoRemedy.models import ReportType  # noqa: TC001 - Typer resolves annotations at runtime
 from RepoRemedy.readers import read_report
 from RepoRemedy.readers.common import ReportError
+from RepoRemedy.workflow import propose_repository
 
 app = typer.Typer(name="RepoRemedy", no_args_is_help=True, pretty_exceptions_enable=False)
 
@@ -33,7 +33,7 @@ def _version(value: bool) -> None:  # noqa: FBT001
 def main(
     _show_version: Annotated[bool, typer.Option("--version", callback=_version, is_eager=True)] = False,  # noqa: FBT002
 ) -> None:
-    """Inspect repository audit reports and prepare for reviewable remediation."""
+    """Inspect audits, propose remedies individually or in batches, and publish selections."""
     # Keep offline inspection, proposal review and confirmed publication separate.
 
 
@@ -82,31 +82,49 @@ def propose(
 ) -> None:
     """Gather context and write rendered issue/draft PR proposals as JSON; never publish."""
     try:
-        normalized = read_report(report, report_type, repo)
-        if inputs and inputs.stat().st_size > 1024 * 1024:
-            typer.echo("Error: Inputs exceed the supported size limit", err=True)
-            raise typer.Exit(2)
-        supplied = json.loads(inputs.read_text(encoding="utf-8")) if inputs else {}
-        if not isinstance(supplied, dict):
-            typer.echo("Error: Inputs must be a JSON object keyed by remedy ID", err=True)
-            raise typer.Exit(2)
         with httpx.Client(trust_env=False) as client:
-            snapshot = collect_context(
-                normalized.repository,
+            result = propose_repository(
+                report,
+                report_type,
+                repo,
                 client,
-                ref=ref if ref is not None else normalized.source.audited_commit or "main",
+                ref=ref,
+                inputs=inputs,
+                route=route,
+                approved_inputs=set(approve_inputs or []),
                 token=os.environ.get(token_env),
             )
-        result = propose_remedies(
-            normalized, snapshot, supplied, approved_inputs=set(approve_inputs or []), route=route
-        )
         typer.echo(result.model_dump_json(indent=2))
     except (ContextError, ReportError) as exc:
         typer.echo(f"Error: {exc}", err=True)
         raise typer.Exit(2) from exc
-    except (OSError, ValueError, PydanticSerializationError) as exc:
+    except (OSError, ValueError, PydanticSerializationError, RecursionError) as exc:
         typer.echo("Error: Cannot collect context, validate inputs or write proposals", err=True)
         raise typer.Exit(2) from exc
+
+
+@app.command("propose-batch")
+def propose_batch(
+    manifest: Annotated[Path, typer.Argument(exists=True, dir_okay=False, readable=True)],
+    output: Annotated[Path, typer.Option("--output", help="New directory for bundles and summaries.")],
+) -> None:
+    """Save proposal bundles and summaries for a repository manifest without publishing.
+
+    Exit 0 on success, 3 on partial failure, and 2 if nothing succeeds or a global
+    configuration/output error occurs. Relative input templates use the manifest's
+    directory; --output is a new directory relative to the current working directory.
+    """
+    try:
+        with httpx.Client(trust_env=False) as client:
+            summary = run_batch(manifest, output, client)
+        typer.echo(summary.model_dump_json(indent=2))
+    except (OSError, ValueError, PydanticSerializationError) as exc:
+        typer.echo(
+            "Error: Cannot read batch configuration or write results; inspect configuration and saved summaries",
+            err=True,
+        )
+        raise typer.Exit(2) from exc
+    raise typer.Exit(summary.exit_code or 0)
 
 
 @app.command()
