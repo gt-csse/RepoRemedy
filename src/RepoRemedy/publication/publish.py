@@ -22,6 +22,7 @@ from RepoRemedy.publication.receipts import (
 from RepoRemedy.readers.common import repository_name
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     import httpx
@@ -276,6 +277,7 @@ def publish_remedies(
     *,
     token: str,
     confirmed: bool = False,
+    on_published: Callable[[PublicationReceipt], None] | None = None,
 ) -> ReceiptJournal:
     """Publish explicit selections after confirmation, retaining partial progress.
 
@@ -292,4 +294,7 @@ def publish_remedies(
     with ReceiptStore(receipt_path, bundle.repository) as store:
         for proposal in proposals:
             _publish_one(publisher, bundle, proposal, store, token)
+            if on_published is not None:
+                assert proposal.remedy_id is not None
+                on_published(store.journal.receipts[proposal.remedy_id].model_copy(deep=True))
         return store.journal
