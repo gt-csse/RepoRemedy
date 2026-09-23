@@ -50,6 +50,8 @@ if TYPE_CHECKING:
 class RemedySelection(SelectionList[int]):
     """Notify the app when library layout changes require reflowing column labels."""
 
+    BINDINGS: ClassVar = [Binding("space", "select", "Toggle")]
+
     class Resized(Message):
         """The selection viewport has a new terminal size."""
 
@@ -171,7 +173,7 @@ class RemedyApp(App[None]):
                     yield Button("Back to selections", id="back-to-selection")
                     yield Button("Save / exit", id="publication-exit")
         yield Label("No publication has been authorized.", id="notice", markup=False)
-        yield Footer()
+        yield Footer(show_command_palette=False)
 
     def compose_session_pages(self) -> ComposeResult:
         """Keep save and restore summaries together, separate from selection controls."""
@@ -240,18 +242,18 @@ class RemedyApp(App[None]):
         if action in {"save", "quit"}:
             return True
         if len(self.screen_stack) > 1 or self.busy:
-            return None
+            return False
         if action == "selection" and isinstance(self.focused, Input):
             return True
         if isinstance(self.focused, Input | TextArea | Select):
-            return None
+            return False
         page = self.query_one("#pages", ContentSwitcher).current
         if action in {"search", "filter", "select_filtered"}:
-            return True if page == "selection" else None
+            return page == "selection"
         if action == "continue":
-            return True if self.focused and self.focused.id in {"findings", "candidates"} else None
+            return bool(self.focused and self.focused.id in {"findings", "candidates"})
         if action == "selection":
-            return True if page in {"resume", "review-complete", "publication"} else None
+            return page in {"resume", "review-complete", "publication"}
         return True
 
     def action_search(self) -> None:
