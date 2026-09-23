@@ -56,3 +56,33 @@ def test_review_validation_failure_keeps_current_preview(tmp_path, monkeypatch):
             assert not plan.reviewed
 
     asyncio.run(exercise())
+
+
+def test_form_typing_does_not_trigger_review_or_selection_shortcuts(tmp_path):
+    plan, _ = make_plan()
+    approve_plan(plan)
+    selected = list(plan.selected)
+
+    async def exercise():
+        app = RemedyApp(plan, tmp_path / "plan.json")
+        async with app.run_test(size=(80, 24)) as pilot:
+            app.push_screen(ReviewScreen(plan))
+            await pilot.pause()
+            await pilot.press("e")
+            assert isinstance(app.screen, InputScreen)
+            form = app.screen
+            form.query_one("#route", Select).value = "pr"
+            await pilot.pause()
+            field = form.query_one("#input-0", TextArea)
+            field.load_text("")
+            field.focus()
+            await pilot.press("e", "d", "a", "f", "slash", "enter")
+            assert field.text == "edaf/\n"
+            assert plan.selected == selected
+            assert app.screen is form
+            await pilot.press("escape")
+            assert isinstance(app.screen, ReviewScreen)
+            assert app.screen.region.contains_region(app.screen.query_one("#approve").region)
+            assert app.screen.region.contains_region(app.screen.query_one("#back").region)
+
+    asyncio.run(exercise())

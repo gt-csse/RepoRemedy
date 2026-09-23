@@ -1,12 +1,14 @@
 # noqa: CPY001
 """Textual forms and exact-content preview; all remedy logic lives in the plan."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
+
+from rich.text import Text
 
 from textual import on
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
-from textual.widgets import Button, Checkbox, Label, Select, TextArea
+from textual.widgets import Button, Checkbox, Footer, Label, RichLog, Select, TextArea
 
 from RepoRemedy.catalog import load_catalog
 from RepoRemedy.context.github import ContextError
@@ -16,22 +18,40 @@ if TYPE_CHECKING:
     from RepoRemedy.plan import RemedyPlan
 
 
+def get_remedy_name(identifier: str) -> str:
+    """Display a readable catalog identifier without maintaining a parallel catalog."""
+    return identifier.removeprefix("ra-").replace("-", " ").capitalize()
+
+
 def render_proposal(plan: RemedyPlan, identifier: str) -> str:
     """Present untrusted source text literally, including reasons, body and file diffs."""
     proposal = plan.get_proposal(identifier)
-    lines = [f"{identifier} / {proposal.route} / {proposal.status}", "", "Evidence"]
+    route = "Draft PR" if proposal.route == "pr" else "Issue"
+    lines = [f"{get_remedy_name(identifier)}  /  {route}  /  {proposal.status}"]
+    if proposal.content:
+        lines.extend(["", f"Title: {proposal.content.title}"])
+    lines.extend(["", "Evidence"])
     lines.extend(f"{f.origin} {f.check} ({f.location}): {f.evidence}" for f in proposal.findings)
-    lines.extend(["", *proposal.reasons])
+    lines.extend(proposal.reasons)
     lines.extend(f"Required: {key} - {reason}" for key, reason in proposal.missing_inputs.items())
     if proposal.content:
-        lines.extend(["", proposal.content.title, "", proposal.content.body])
         for file in proposal.content.files:
-            lines.extend(["", file.path.as_posix(), file.diff])
+            lines.extend(["", f"New file: {file.path.as_posix()}", file.diff])
+        lines.extend(
+            [
+                "",
+                "## PR description" if proposal.route == "pr" else "## Issue body",
+                "",
+                proposal.content.body,
+            ]
+        )
     return "\n".join(lines)
 
 
 class InputScreen(ModalScreen[bool]):
     """Use library text areas for multiline catalog inputs and explicit approval."""
+
+    BINDINGS: ClassVar = [("escape", "cancel", "Back"), ("ctrl+enter", "generate", "Generate preview")]
 
     def __init__(self, plan: RemedyPlan, identifier: str) -> None:
         super().__init__()
@@ -41,8 +61,12 @@ class InputScreen(ModalScreen[bool]):
 
     def compose(self) -> ComposeResult:
         """Compose library controls for the current review step."""
-        with VerticalScroll(id="dialog"):
-            yield Label(f"Inputs: {self.identifier}", markup=False)
+        with Vertical(id="dialog"):
+            yield Label(
+                f"{get_remedy_name(self.identifier).upper()}  /  COMPLETE INPUTS",
+                id="input-title",
+                markup=False,
+            )
             options = [("Issue", "issue")]
             if load_catalog().remedies[self.identifier].pr:
                 options.append(("Draft PR", "pr"))
@@ -54,6 +78,7 @@ class InputScreen(ModalScreen[bool]):
             with Horizontal(classes="buttons"):
                 yield Button("Generate preview", id="generate", variant="primary")
                 yield Button("Cancel", id="cancel-inputs")
+            yield Footer()
 
     @on(Select.Changed, "#route")
     async def show_fields(self) -> None:
@@ -65,9 +90,19 @@ class InputScreen(ModalScreen[bool]):
         container = self.query_one("#fields", VerticalScroll)
         await container.remove_children()
         for index, (name, value) in enumerate(values.items()):
-            await container.mount(Label(name.replace("_", " "), markup=False))
+            await container.mount(
+                Label(name.replace("_", " ").capitalize(), markup=False, classes="field-name")
+            )
             await container.mount(TextArea(value, id=f"input-{index}", classes="input-field"))
         self.query_one("#approve-inputs", Checkbox).value = False
+
+    def action_generate(self) -> None:
+        """Generate through the same approval gate as the button."""
+        self.generate_preview()
+
+    def action_cancel(self) -> None:
+        """Leave form values unapplied when returning to the preview."""
+        self.cancel_inputs()
 
     @on(Button.Pressed, "#generate")
     def generate_preview(self) -> None:
@@ -94,6 +129,13 @@ class InputScreen(ModalScreen[bool]):
 class ReviewScreen(ModalScreen[None]):
     """Review each selected issue or PR, retaining selection and input controls."""
 
+    BINDINGS: ClassVar = [
+        ("enter", "approve", "Approve / next"),
+        ("e", "edit", "Edit inputs"),
+        ("d", "deselect", "Deselect"),
+        ("escape", "back", "Back"),
+    ]
+
     def __init__(self, plan: RemedyPlan) -> None:
         super().__init__()
         self.plan = plan
@@ -102,51 +144,91 @@ class ReviewScreen(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         """Compose library controls for the current review step."""
-        with VerticalScroll(id="dialog"):
+        with Vertical(id="dialog"):
             yield Label(id="review-position", markup=False)
-            yield TextArea(read_only=True, id="preview")
+            yield RichLog(wrap=True, markup=False, auto_scroll=False, min_width=1, id="preview")
             with Horizontal(classes="buttons"):
                 yield Button("Approve / next", id="approve", variant="primary")
                 yield Button("Edit inputs / route", id="edit")
                 yield Button("Deselect", id="deselect")
                 yield Button("Back", id="back")
+            yield Label(
+                "Approval applies to this exact preview. Publication requires separate confirmation.",
+                classes="muted",
+            )
+            yield Footer()
 
     def on_mount(self) -> None:
         """Show the first selected proposal."""
         self.show_proposal()
+        self.query_one("#preview", RichLog).focus()
 
     def show_proposal(self, _changed: bool | None = None) -> None:  # noqa: FBT001 - modal callback
         """Display the exact body and diff that approval will bind to."""
         identifier = self.identifiers[self.index]
         proposal = self.plan.get_proposal(identifier)
         self.query_one("#review-position", Label).update(
-            f"Review {self.index + 1}/{len(self.identifiers)}: {identifier} ({proposal.status})"
+            f"REVIEW {self.index + 1} / {len(self.identifiers)}    {identifier}    "
+            f"{'Draft PR' if proposal.route == 'pr' else 'Issue'} / {proposal.status}"
         )
-        self.query_one("#preview", TextArea).load_text(render_proposal(self.plan, identifier))
+        preview = Text()
+        for line in render_proposal(self.plan, identifier).splitlines():
+            style = (
+                "#9DDEAE"
+                if line.startswith("+")
+                else "#F08C8C"
+                if line.startswith("-")
+                else "bold #72D5E5"
+                if line.startswith(("#", "Title:", "New file:", "@@")) or line == "Evidence"
+                else ""
+            )
+            preview.append(line + "\n", style=style)
+        self.query_one("#preview", RichLog).clear().write(preview)
+        self.query_one("#preview", RichLog).scroll_home(animate=False)
         self.query_one("#approve", Button).disabled = proposal.status != "ready"
+
+    def action_approve(self) -> None:
+        """Approve exact content using the shared plan validator."""
+        self.advance_review(deselect=False)
+
+    def action_edit(self) -> None:
+        """Edit the current remedy's inputs and route."""
+        self.app.push_screen(InputScreen(self.plan, self.identifiers[self.index]), self.show_proposal)
+
+    def action_deselect(self) -> None:
+        """Remove the current remedy from the saved selection."""
+        self.advance_review(deselect=True)
+
+    def action_back(self) -> None:
+        """Return without approving the current preview."""
+        self.dismiss(None)
+
+    def advance_review(self, *, deselect: bool) -> None:
+        """Advance only after validation or an explicit deselection."""
+        identifier = self.identifiers[self.index]
+        try:
+            if deselect:
+                self.plan.set_selected(identifier, selected=False)
+            else:
+                self.plan.approve(identifier)
+        except ContextError, ValueError:
+            self.notify("Proposal validation failed; edit inputs or regenerate context", severity="error")
+            return
+        self.index += 1
+        if self.index == len(self.identifiers):
+            self.dismiss(None)
+        else:
+            self.show_proposal()
 
     @on(Button.Pressed)
     def handle_button(self, event: Button.Pressed) -> None:
-        """Delegate input and content validation to the shared plan model."""
-        identifier = self.identifiers[self.index]
+        """Use the same actions for keyboard and mouse navigation."""
         match event.button.id:
             case "back":
-                self.dismiss(None)
+                self.action_back()
             case "edit":
-                self.app.push_screen(InputScreen(self.plan, identifier), self.show_proposal)
-            case "approve" | "deselect":
-                try:
-                    if event.button.id == "approve":
-                        self.plan.approve(identifier)
-                    else:
-                        self.plan.set_selected(identifier, selected=False)
-                except ContextError, ValueError:
-                    self.notify(
-                        "Proposal validation failed; edit inputs or regenerate context", severity="error"
-                    )
-                    return
-                self.index += 1
-                if self.index == len(self.identifiers):
-                    self.dismiss(None)
-                else:
-                    self.show_proposal()
+                self.action_edit()
+            case "approve":
+                self.action_approve()
+            case "deselect":
+                self.action_deselect()

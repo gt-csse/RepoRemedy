@@ -11,6 +11,7 @@ from textual.widgets import (
     Input,
     Label,
     OptionList,
+    RichLog,
     Select,
     SelectionList,
     TextArea,
@@ -80,10 +81,13 @@ def test_inspect_select_inputs_review_save_resume_publish_retry(tmp_path, monkey
             await pilot.pause()
             assert isinstance(app.screen, ReviewScreen)
             assert not app.screen.query_one("#approve", Button).disabled
-            assert "SECURITY.md" in app.screen.query_one("#preview", TextArea).text
+            assert "SECURITY.md" in "\n".join(
+                line.text for line in app.screen.query_one("#preview", RichLog).lines
+            )
             await pilot.click("#approve")
             await pilot.pause()
             assert plan.is_reviewed("security-policy")
+            assert app.query_one("#pages", ContentSwitcher).current == "review-complete"
             app.action_save()
             assert load_plan(path).reviewed == plan.reviewed
             assert not api.posts
@@ -91,6 +95,8 @@ def test_inspect_select_inputs_review_save_resume_publish_retry(tmp_path, monkey
         restored = load_plan(path)
         app = RemedyApp(restored, path, publish_only=True)
         async with app.run_test(size=(140, 45)) as pilot:
+            await wait_for_worker(app, pilot)
+            assert app.preflight is not None and app.preflight.can_publish() and not api.posts
             await pilot.click("#publish")
             assert not api.posts
             app.query_one("#confirmation", Checkbox).value = True
@@ -99,6 +105,8 @@ def test_inspect_select_inputs_review_save_resume_publish_retry(tmp_path, monkey
             await wait_for_worker(app, pilot)
             assert len(api.issues) == 1 and api.issues[0]["draft"]
             assert app.results[0].status == "created"
+            await pilot.click("#check-again")
+            await wait_for_worker(app, pilot)
             app.query_one("#confirmation", Checkbox).value = True
             await pilot.pause(0.3)
             await pilot.click("#publish")
@@ -201,6 +209,7 @@ def test_review_cancel_deselect_and_publish_failure(tmp_path, monkeypatch):
             assert plan.selected == []
             approve_plan(plan)
             await pilot.click("#prepare-publication")
+            await wait_for_worker(app, pilot)
             api.overrides[("GET", "/issues")] = httpx.Response(403)
             app.query_one("#confirmation", Checkbox).value = True
             await pilot.click("#publish")
@@ -244,18 +253,130 @@ def test_partial_publication_retains_receipts_and_reconciles_lost_response(tmp_p
     async def exercise():
         app = RemedyApp(plan, tmp_path / "plan.json", publish_only=True)
         async with app.run_test(size=(120, 40)) as pilot:
+            await wait_for_worker(app, pilot)
             app.query_one("#confirmation", Checkbox).value = True
             await pilot.click("#publish")
             await wait_for_worker(app, pilot)
             assert len(app.results) == 1 and len(api.issues) == 2
             assert "Stopped" in str(app.query_one("#notice", Label).content)
             assert "PRIVATE" not in str(app.query_one("#notice", Label).content)
+            assert "Unresolved  1" in str(app.query_one("#result-counts", Label).content)
             del api.overrides[key]
+            await pilot.click("#check-again")
+            await wait_for_worker(app, pilot)
             app.query_one("#confirmation", Checkbox).value = True
             await pilot.pause(0.3)
             await pilot.click("#publish")
             await wait_for_worker(app, pilot)
             assert len(api.posts) == 2
             assert [r.status for r in app.results] == ["existing", "existing"]
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("size", [(120, 40), (80, 24)])
+def test_keyboard_selection_search_resize_and_review(tmp_path, size):
+    plan, _ = make_plan()
+
+    async def exercise():
+        app = RemedyApp(plan, tmp_path / "plan.json")
+        async with app.run_test(size=size) as pilot:
+            await pilot.pause()
+            await pilot.press("a")
+            assert plan.selected == ["security-policy"]
+            await pilot.press("/")
+            assert app.focused is app.query_one("#search")
+            await pilot.press("f", "a")
+            assert app.query_one("#search", Input).value == "fa"
+            assert plan.selected == ["security-policy"]
+            assert app.visible_indices == []
+            app.query_one("#search", Input).value = ""
+            await pilot.press("escape")
+            assert app.focused is app.query_one("#candidates")
+            await pilot.press("f")
+            assert app.focused is app.query_one("#filter")
+            app.query_one("#candidates").focus()
+            await pilot.resize_terminal(80, 24)
+            await pilot.pause()
+            assert "compact" in app.screen.classes
+            viewport = app.screen.region
+            for identifier in ("candidates", "details", "review", "prepare-publication", "save-exit"):
+                assert viewport.contains_region(app.query_one(f"#{identifier}").region)
+            await pilot.press("enter")
+            assert isinstance(app.screen, ReviewScreen)
+            await pilot.press("e")
+            assert isinstance(app.screen, InputScreen)
+            await pilot.press("escape")
+            assert isinstance(app.screen, ReviewScreen)
+            await pilot.press("enter")
+            assert plan.is_reviewed("security-policy")
+            assert app.query_one("#pages", ContentSwitcher).current == "review-complete"
+            await pilot.press("escape")
+            assert app.query_one("#pages", ContentSwitcher).current == "selection"
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("choice", [0, 1, 2, 3])
+def test_resume_choices_do_not_publish(tmp_path, monkeypatch, choice):
+    plan, api = make_plan()
+    approve_plan(plan)
+    install_api(monkeypatch, api)
+    path = tmp_path / "plan.json"
+
+    async def exercise():
+        app = RemedyApp(plan, path, resumed=True)
+        async with app.run_test(size=(80, 24)) as pilot:
+            assert app.query_one("#pages", ContentSwitcher).current == "resume"
+            api.requests.clear()
+            assert not api.requests
+            app.query_one("#resume-options", OptionList).highlighted = choice
+            await pilot.press("enter")
+            await wait_for_worker(app, pilot)
+            if choice == 0:
+                assert app.preflight is not None and app.preflight.can_publish()
+                assert not app.query_one("#confirmation", Checkbox).value
+            elif choice == 1:
+                assert isinstance(app.screen, ReviewScreen)
+                await pilot.press("escape")
+            elif choice == 2:
+                assert app.query_one("#pages", ContentSwitcher).current == "selection"
+            else:
+                assert load_plan(path).selected == plan.selected
+            assert not api.posts
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("failure", ["access", "token", "changed_plan"])
+def test_preflight_blocks_confirmation_and_rechecks_after_failure(tmp_path, monkeypatch, failure):
+    plan, api = make_plan()
+    approve_plan(plan)
+    install_api(monkeypatch, api)
+    if failure == "access":
+        api.overrides[("GET", "/issues")] = httpx.Response(403)
+    elif failure == "token":
+        monkeypatch.delenv("REPOREMEDY_TOKEN")
+
+    async def exercise():
+        app = RemedyApp(plan, tmp_path / "plan.json", publish_only=True)
+        async with app.run_test(size=(100, 36)) as pilot:
+            await wait_for_worker(app, pilot)
+            if failure == "changed_plan":
+                plan.reviewed.clear()
+            else:
+                assert app.query_one("#confirmation", Checkbox).disabled
+                assert app.query_one("#publish", Button).disabled
+            app.query_one("#confirmation", Checkbox).value = True
+            app.start_publication()
+            assert not api.posts
+            approve_plan(plan)
+            api.overrides.clear()
+            monkeypatch.setenv("REPOREMEDY_TOKEN", "test")
+            await pilot.click("#check-again")
+            await wait_for_worker(app, pilot)
+            assert app.preflight is not None and app.preflight.can_publish()
+            assert not app.query_one("#confirmation", Checkbox).value
+            assert not (tmp_path / "publication-receipts.json").exists()
 
     asyncio.run(exercise())

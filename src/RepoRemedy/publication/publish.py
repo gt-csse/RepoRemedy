@@ -1,6 +1,7 @@
 # noqa: CPY001
 """Publish only selected, confirmed and freshly validated catalog remedies."""
 
+from dataclasses import dataclass
 import datetime
 import hashlib
 from typing import TYPE_CHECKING
@@ -18,6 +19,7 @@ from RepoRemedy.publication.receipts import (
     PublicationReceipt,
     ReceiptJournal,
     ReceiptStore,
+    load_receipts,
 )
 from RepoRemedy.readers.common import repository_name
 
@@ -139,6 +141,36 @@ def _check_freshness(
         raise PublicationError(message)
 
 
+def _check_publication_branch(publisher: GitHubPublisher, branch: str, commit_sha: str | None) -> bool:
+    """Require branch absence or the exact recorded commit, without creating refs."""
+    existing = publisher.read(f"/git/ref/heads/{encode_segment(branch)}")
+    if existing.status == "available":
+        value = existing.value
+        obj = value.get("object") if isinstance(value, dict) else None
+        if not commit_sha or not isinstance(obj, dict) or obj.get("sha") != commit_sha:
+            message = "Publication branch exists with unrecorded or changed content; reconcile it manually"
+            raise PublicationError(message)
+        return True
+    if existing.reason != "GitHub HTTP 404":
+        message = "Cannot establish publication branch absence"
+        raise PublicationError(message)
+    return False
+
+
+def _check_previous_receipt(
+    previous: PublicationReceipt | None, bundle: ProposalBundle, proposal: Proposal, digest: str
+) -> None:
+    """Use the same reconciliation rule in preflight and publication."""
+    if previous and (
+        previous.status != "pending"
+        or previous.content_sha256 != digest
+        or previous.base_commit != bundle.base_commit
+        or previous.route != proposal.route
+    ):
+        message = "Prior publication cannot be reconciled; inspect receipts and GitHub before retrying"
+        raise PublicationError(message)
+
+
 def _prepare_branch(
     publisher: GitHubPublisher,
     bundle: ProposalBundle,
@@ -153,18 +185,8 @@ def _prepare_branch(
     """
     assert proposal.content is not None
     assert receipt.branch is not None
-    suffix = f"/git/ref/heads/{encode_segment(receipt.branch)}"
-    existing = publisher.read(suffix)
-    if existing.status == "available":
-        value = existing.value
-        obj = value.get("object") if isinstance(value, dict) else None
-        if not receipt.commit_sha or not isinstance(obj, dict) or obj.get("sha") != receipt.commit_sha:
-            message = "Publication branch exists with unrecorded or changed content; reconcile it manually"
-            raise PublicationError(message)
+    if _check_publication_branch(publisher, receipt.branch, receipt.commit_sha):
         return
-    if existing.reason != "GitHub HTTP 404":
-        message = "Cannot establish publication branch absence"
-        raise PublicationError(message)
     if receipt.commit_sha is None:
         entries: list[JsonValue] = [
             {"path": file.path.as_posix(), "mode": "100644", "type": "blob", "content": file.content}
@@ -220,14 +242,7 @@ def _publish_one(
         store.journal.receipts[identifier] = receipt
         _record_target(receipt, duplicate, store)
         return
-    if previous and (
-        previous.status != "pending"
-        or previous.content_sha256 != digest
-        or previous.base_commit != bundle.base_commit
-        or previous.route != proposal.route
-    ):
-        message = "Prior publication cannot be reconciled; inspect receipts and GitHub before retrying"
-        raise PublicationError(message)
+    _check_previous_receipt(previous, bundle, proposal, digest)
     _check_freshness(publisher, bundle, proposal, token)
     receipt = previous or PublicationReceipt(
         base_commit=bundle.base_commit,
@@ -268,6 +283,84 @@ def _publish_one(
     _record_target(receipt, target, store)
 
 
+@dataclass(frozen=True)
+class PreflightItem:
+    """One checked selection: an existing target, a possible creation or a blocker."""
+
+    remedy_id: str
+    existing: PublishedTarget | None = None
+    error: str | None = None
+
+
+@dataclass(frozen=True)
+class PublicationPreflight:
+    """Read-only observations, not authorization or a lock on remote state.
+
+    Existing matches follow publisher reuse rules: they need no creation access
+    or fresh branch. New objects pass the existing route, evidence, branch and
+    receipt checks. GitHub can still reject a write; publication rechecks state.
+    """
+
+    items: list[PreflightItem]
+    checked_at: datetime.datetime
+
+    def can_publish(self) -> bool:
+        """Enable confirmation only after every selection has passed its checks."""
+        return bool(self.items) and all(item.error is None for item in self.items)
+
+
+def preflight_remedies(
+    bundle: ProposalBundle,
+    selected: list[str],
+    repository: str,
+    receipt_path: Path,
+    client: httpx.Client,
+    *,
+    token: str,
+) -> PublicationPreflight:
+    """Check expected creations and reuse with GETs only; leave all files untouched.
+
+    Fail closed for unreadable journals or active publishers. A snapshot may become
+    stale immediately; publish_remedies always repeats validation under its lock.
+    Errors from remote response bodies and credentials are never displayed.
+    """
+    if not token.strip():
+        message = "Set the configured token environment variable before checking publication"
+        raise PublicationError(message)
+    proposals = select_proposals(bundle, selected, repository)
+    if receipt_path.with_name(receipt_path.name + ".lock").exists():
+        message = "Receipt journal is locked; wait for the active publisher before checking again"
+        raise PublicationError(message)
+    journal = load_receipts(receipt_path, bundle.repository)
+    publisher = GitHubPublisher(bundle.repository, client, token)
+    items = []
+    for proposal in proposals:
+        assert proposal.remedy_id is not None
+        assert proposal.content is not None
+        identifier = proposal.remedy_id
+        key = get_publication_key(bundle.repository, identifier)
+        try:
+            duplicate = publisher.find_duplicate(proposal, f"<!-- reporemedy:v1:{key} -->")
+            if not duplicate:
+                previous = journal.receipts.get(identifier)
+                digest = hashlib.sha256(proposal.content.model_dump_json().encode()).hexdigest()
+                _check_previous_receipt(previous, bundle, proposal, digest)
+                _check_freshness(publisher, bundle, proposal, token)
+                if proposal.route == "pr":
+                    _check_publication_branch(
+                        publisher,
+                        previous.branch if previous and previous.branch else f"reporemedy/{key}",
+                        previous.commit_sha if previous else None,
+                    )
+        except PublicationError as exc:
+            items.append(PreflightItem(identifier, error=str(exc)))
+        except ValueError:
+            items.append(PreflightItem(identifier, error="Cannot validate repository evidence; check again"))
+        else:
+            items.append(PreflightItem(identifier, existing=duplicate))
+    return PublicationPreflight(items, datetime.datetime.now(datetime.UTC))
+
+
 def publish_remedies(
     bundle: ProposalBundle,
     selected: list[str],
@@ -285,6 +378,8 @@ def publish_remedies(
     Stateful clients and receipt storage are classes. The receipt lock spans the
     run; each completed item survives a later item's failure. Uncertain final POSTs
     are never retried blindly. Only selected content is sent, never the bundle.
+    on_published receives a copy after each completed receipt is durably saved.
+    Preflight results never replace this operation's checks or confirmation.
     """
     if confirmed is not True or not token.strip():
         message = "Publication requires explicit confirmation and a token for the target host"
