@@ -1,6 +1,7 @@
 """Exercise real Textual controls and publication against the simulated GitHub API."""
 
 import asyncio
+import xml.etree.ElementTree as ET
 
 import httpx
 import pytest
@@ -296,6 +297,11 @@ def test_keyboard_selection_search_resize_and_review(tmp_path, size):
             await pilot.press("escape")
             assert app.focused is app.query_one("#candidates")
             assert "Evidence: SecurityPolicy" in app.query_one("#details", TextArea).text
+            await pilot.pause()
+            rendered = "".join(ET.fromstring(app.export_screenshot()).itertext()).replace("\u00a0", " ")
+            assert "Evidence: SecurityPolicy" in rendered
+            assert "No matching remedies" not in rendered
+            assert "Review 1" in rendered
             await pilot.press("f")
             assert app.focused is app.query_one("#filter")
             app.query_one("#candidates").focus()
