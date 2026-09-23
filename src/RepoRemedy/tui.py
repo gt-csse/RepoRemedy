@@ -296,6 +296,11 @@ class RemedyApp(App[None]):
             case 3:
                 self.call_later(self.action_quit)
 
+    @on(TextArea.Changed)
+    def refresh_text(self, event: TextArea.Changed) -> None:
+        """Repaint changed text even when Textual's wrapped document size is unchanged."""
+        event.text_area.refresh()
+
     def show_notice(self, message: str) -> None:
         """Display plain text without interpreting report or exception markup."""
         self.query_one("#notice", Label).update(message)
@@ -405,7 +410,9 @@ class RemedyApp(App[None]):
             f"{len(self.plan.selected)} / {len(proposals)} selected    ·    {reviewed} reviewed\n"
             f"{ready} ready  ·  {needs_input} need input  ·  {needs_review} need review  ·  {unavailable} not selectable"
         )
-        self.query_one("#review", Button).label = f"Review {len(self.plan.selected)}"
+        review_button = self.query_one("#review", Button)
+        review_button.label = f"Review {len(self.plan.selected)}"
+        review_button.refresh()
         self.show_visible_count()
         if candidates.highlighted is not None:
             self.show_candidate_details(candidates.get_option_at_index(candidates.highlighted).value)
