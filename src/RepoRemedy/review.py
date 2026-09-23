@@ -78,7 +78,7 @@ class InputScreen(ModalScreen[bool]):
             with Horizontal(classes="buttons"):
                 yield Button("Generate preview", id="generate", variant="primary")
                 yield Button("Cancel", id="cancel-inputs")
-            yield Footer()
+            yield Footer(show_command_palette=False)
 
     @on(Select.Changed, "#route")
     async def show_fields(self) -> None:
@@ -156,7 +156,7 @@ class ReviewScreen(ModalScreen[None]):
                 "Approval applies to this exact preview. Publication requires separate confirmation.",
                 classes="muted",
             )
-            yield Footer()
+            yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         """Show the first selected proposal."""
