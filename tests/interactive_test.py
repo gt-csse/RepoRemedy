@@ -40,11 +40,13 @@ def test_terminal_inspection_new_and_resume(tmp_path, monkeypatch):
     run_inspection(plan.report, path, token_env="ENTERPRISE_TOKEN")
     assert ui.call_args.args[0].token_env == "ENTERPRISE_TOKEN"
     assert ui.return_value.run.call_count == 1
+    assert ui.call_args.kwargs == {"resumed": False}
     save_plan(plan, path)
     with pytest.raises(ContextError, match="already exists"):
         run_inspection(plan.report, path)
     run_inspection(None, path, resume=True)
     assert ui.call_args.args[0] == load_plan(path)
+    assert ui.call_args.kwargs == {"resumed": True}
     monkeypatch.setattr("RepoRemedy.cli.run_inspection", Mock())
     assert RUNNER.invoke(app, ["inspect", "--resume", str(path)]).exit_code == 0
     conflict = RUNNER.invoke(app, ["inspect", str(REPORT), "--resume", str(path)])

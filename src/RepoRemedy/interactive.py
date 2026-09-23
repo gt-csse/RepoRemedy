@@ -40,7 +40,7 @@ def run_inspection(
         plan = RemedyPlan.model_validate(plan.model_dump() | {"token_env": token_env})
     from RepoRemedy.tui import RemedyApp  # noqa: PLC0415 - keep Textual out of JSON commands
 
-    RemedyApp(plan, path.resolve()).run()
+    RemedyApp(plan, path.resolve(), resumed=resume).run()
 
 
 def run_plan_publication(path: Path, *, confirmed: bool = False) -> ReceiptJournal | None:

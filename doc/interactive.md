@@ -18,6 +18,17 @@ The terminal interface uses [Textual](https://textual.textualize.io/). It suppor
 keyboard navigation and mouse input. `Tab` moves between controls; arrow keys
 browse lists; `Space` toggles a remedy or checkbox. `Ctrl+S` saves the session and
 `Ctrl+Q` saves and exits. The same actions are available as labeled buttons.
+The layout follows the terminal mockups with a dark background, aligned columns,
+status colors and evidence below the remedy list. It adapts to 80×24 terminals;
+120×40 or larger provides more room for findings and previews. Terminal fonts and
+the `NO_COLOR` environment setting remain under the user's control.
+
+While browsing remedies, `/` focuses search, `F` focuses the filter, `A` selects
+eligible filtered rows and `Enter` starts review. `Escape` leaves search. These
+single-letter shortcuts do not intercept typing in input fields. During review,
+`Enter` approves the current proposal, `E` edits inputs, `D` deselects and `Escape`
+returns. In multiline input forms, `Enter` inserts a newline; use the button or
+`Ctrl+Enter` to generate a preview.
 
 ## Select and review
 
@@ -31,6 +42,13 @@ browse lists; `Space` toggles a remedy or checkbox. `Ctrl+S` saves the session a
 5. Choose **Approve / next** for each ready proposal, or deselect it. Input
    approval and content review are separate. Changing inputs or routes clears
    the affected content review. Blocked proposals cannot be approved.
+6. When every selection has been reviewed, the **Review complete** screen shows
+   ready/attention counts and the draft PR/issue split. Save and exit, change the
+   selection, or continue to publication checks. No publication happens here.
+
+PR review shows the exact file diffs first, with colored added/removed lines;
+the complete PR description follows. Issue review includes the complete issue
+body. Scroll through longer proposals before approving.
 
 The UI offers a draft PR for catalog remedies with a PR definition and shows why
 it is not yet ready. This avoids silently falling back to an issue while a user
@@ -47,6 +65,10 @@ discard duplicate evidence. Use one report for one repository per plan.
 ```shell
 uv run RepoRemedy inspect --resume remedy-plan.json
 ```
+
+Resume opens **Saved session restored**, with actual selection/review counts and
+choices to continue to publication, review proposals, change selections or save
+and exit. Restoring a session itself makes no network requests.
 
 The versioned JSON plan embeds the existing proposal bundle, selections, inputs,
 route choices and exact-content review digests. It is written atomically and can
@@ -69,8 +91,18 @@ uv run RepoRemedy publish --plan remedy-plan.json
 ```
 
 Every selected proposal must be ready and reviewed. The screen names the target
-repository and expected issue/draft-PR counts. Check the confirmation box and
-choose **Publish selected**. Selecting or reviewing remedies never publishes.
+repository and selected issue/draft-PR counts, then runs read-only preflight.
+It checks saved content, existing GitHub matches and receipt reconciliation; new
+objects also undergo the publisher's route, branch, evidence and publication-branch
+checks. It reports expected creations, existing results to reuse and blockers.
+These checks issue GET requests only and do not create or modify receipt files.
+The reviewed plan is saved locally before the checks begin.
+
+Confirmation is disabled until every selection passes. Check the confirmation
+box and choose **Publish selected**. Existing matches can be reused without
+creation permissions or a fresh base branch. Preflight is a snapshot, not a write
+permission guarantee or a lock on GitHub: publication repeats validation and can
+still be rejected. Selecting or reviewing remedies never publishes.
 
 The existing publisher checks target freshness and permissions before each new
 publication, reuses matching existing objects, and records each completed result
@@ -79,8 +111,13 @@ links. Select a result and choose **Open selected result** to view it in a brows
 Draft PRs require maintainer review and merging; issues request maintainer action.
 Repository settings are not changed automatically.
 
+The progress and completion views show created, reused, failed/blocked, unresolved
+and remaining counts separately. Results have readable remedy, outcome and action
+columns, with the selected result's actual URL displayed below.
+
 If publication stops, completed results and the plan remain available. Inspect
-the receipt journal before retrying the same command. Confirm each retry; matching
+the receipt journal, then choose **Check again / retry** or reopen the command.
+Every retry runs preflight again and clears the confirmation checkbox. Matching
 existing objects are reused. Uncertain attempts still require reconciliation and
 are never blindly recreated. A stale branch or changed catalog requires generating
 and reviewing a new plan from an appropriate audit; resuming does not refresh or
@@ -103,9 +140,9 @@ this increment.
 
 `plan.py` owns saved state and review validity. `review.py` provides library form
 and preview controls. `tui.py` coordinates screens and background workers.
-`interactive.py` adapts the CLI. The only publisher extension is an optional
-callback after a completed receipt is durably saved; validation and retry rules
-remain in the existing publisher.
+`interactive.py` adapts the CLI; `tui.tcss` contains presentation styles. Read-only
+preflight and publication reuse validation and reconciliation helpers in the
+publisher. Publication progress callbacks run after durable receipt saves.
 
 ```shell
 uv run pytest tests/plan_test.py tests/interactive_test.py tests/review_test.py tests/tui_test.py --no-cov
@@ -113,5 +150,6 @@ uv run pytest tests/plan_test.py tests/interactive_test.py tests/review_test.py 
 
 Tests run the real Textual controls headlessly, with simulated GitHub responses,
 including selection across filters, input completion, review invalidation,
-save/resume, explicit confirmation, publication and duplicate reuse. They do not
+save/resume, read-only preflight, keyboard navigation, 80×24 layout bounds,
+explicit confirmation, publication and duplicate reuse. They do not
 create live GitHub objects.
