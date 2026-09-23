@@ -417,3 +417,96 @@ def test_publication_branch_changed_after_creation_blocks_pr(tmp_path):
     with pytest.raises(PublicationError, match="branch changed"):
         publish(api, bundle, tmp_path / "receipt.json")
     assert "/pulls" not in [endpoint for endpoint, _ in api.posts]
+
+
+def preflight(api, bundle, path, token="PRIVATE"):
+    from RepoRemedy.publication.publish import preflight_remedies
+
+    with httpx.Client(transport=httpx.MockTransport(api)) as client:
+        return preflight_remedies(
+            bundle, [p.remedy_id for p in bundle.proposals], bundle.repository, path, client, token=token
+        )
+
+
+def test_preflight_only_reads_and_publication_rechecks_remote_state(tmp_path):
+    api = PublishingGitHub()
+    bundle = api.bundle("IssueTemplates")
+    path = tmp_path / "receipts.json"
+    api.requests.clear()
+    result = preflight(api, bundle, path)
+    assert result.can_publish() and result.checked_at.tzinfo is not None
+    assert result.items[0].existing is None
+    assert api.requests and all(r.method == "GET" for r in api.requests)
+    assert not list(tmp_path.iterdir())
+    api.responses["/branches/main"]["commit"]["sha"] = "f" * 40
+    with pytest.raises(PublicationError, match="moved"):
+        publish(api, bundle, path)
+    assert not api.posts
+
+
+def test_preflight_reuses_existing_even_after_branch_change_and_does_not_save(tmp_path):
+    api = PublishingGitHub()
+    bundle = api.bundle()
+    path = tmp_path / "receipts.json"
+    publish(api, bundle, path)
+    before = path.read_bytes()
+    api.requests.clear()
+    api.responses["/branches/main"]["commit"]["sha"] = "f" * 40
+    result = preflight(api, bundle, path)
+    assert result.can_publish() and result.items[0].existing.number == 1
+    assert path.read_bytes() == before
+    assert all(r.method == "GET" for r in api.requests)
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("change", ["branch", "permission", "collision", "unreadable", "invalid_sha"])
+def test_preflight_explains_blockers_without_writes(tmp_path, change):
+    api = PublishingGitHub()
+    bundle = api.bundle("IssueTemplates")
+    if change == "branch":
+        api.responses["/branches/main"]["commit"]["sha"] = "f" * 40
+    elif change == "permission":
+        api.responses[""]["permissions"] = {"push": False}
+    elif change == "collision":
+        key = get_publication_key(bundle.repository, "ra-issue-templates")
+        api.refs[f"reporemedy/{key}"] = NEW_COMMIT
+    elif change == "invalid_sha":
+        api.responses["/branches/main"]["commit"]["sha"] = "SECRET"
+    else:
+        api.overrides[("GET", "/issues")] = httpx.Response(403)
+    result = preflight(api, bundle, tmp_path / "receipts.json")
+    assert not result.can_publish() and result.items[0].error
+    assert "SECRET" not in result.items[0].error
+    assert not api.posts and not list(tmp_path.iterdir())
+
+
+def test_preflight_blocks_uncertain_attempt_without_losing_earlier_matches(tmp_path):
+    api = PublishingGitHub()
+    source = make_report()
+    source.issues.append(make_report("IssueTemplates").issues[0])
+    bundle = propose_remedies(source, api.snapshot(), approved_inputs={"ra-issue-templates"})
+    api.overrides[("POST", "/pulls")] = httpx.Response(403)
+    path = tmp_path / "receipts.json"
+    with pytest.raises(PublicationError):
+        publish(api, bundle, path, [p.remedy_id for p in bundle.proposals])
+    before = path.read_bytes()
+    api.posts.clear()
+    result = preflight(api, bundle, path)
+    assert not result.can_publish()
+    assert result.items[0].existing and "reconciled" in result.items[1].error
+    assert path.read_bytes() == before and not api.posts
+
+
+@pytest.mark.parametrize("cause", ["token", "lock", "foreign_journal"])
+def test_preflight_rejects_invalid_session_before_network(tmp_path, cause):
+    api = PublishingGitHub()
+    bundle = api.bundle()
+    path = tmp_path / "receipts.json"
+    if cause == "lock":
+        path.with_suffix(".json.lock").touch()
+    if cause == "foreign_journal":
+        path.write_text(ReceiptJournal(repository="other/repo").model_dump_json())
+    api.requests.clear()
+    with pytest.raises(ValueError):
+        preflight(api, bundle, path, token="" if cause == "token" else "PRIVATE")
+    assert not api.requests
