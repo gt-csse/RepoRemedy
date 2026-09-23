@@ -47,6 +47,35 @@ class ReceiptJournal(BaseModel):
     receipts: dict[str, PublicationReceipt] = Field(default_factory=dict)
 
 
+MAX_RECEIPT_BYTES = 32 * 1024 * 1024
+
+
+def load_receipts(path: Path, repository: str) -> ReceiptJournal:
+    """Read a bounded journal without creating it, taking a lock or saving changes.
+
+    A missing journal means there are no local attempts. The caller must acquire
+    the publication lock before using this snapshot for writes.
+    """
+    try:
+        with path.open("rb") as stream:
+            if os.fstat(stream.fileno()).st_size > MAX_RECEIPT_BYTES:
+                message = "Receipt journal exceeds the supported size limit"
+                raise PublicationError(message)
+            raw = stream.read(MAX_RECEIPT_BYTES + 1)
+    except FileNotFoundError:
+        return ReceiptJournal(repository=repository)
+    if len(raw) > MAX_RECEIPT_BYTES:
+        message = "Receipt journal exceeds the supported size limit"
+        raise PublicationError(message)
+    journal = ReceiptJournal.model_validate_json(raw)
+    if journal.repository != repository or any(
+        key != receipt.remedy_id for key, receipt in journal.receipts.items()
+    ):
+        message = "Receipt journal repository or remedy identities do not match"
+        raise PublicationError(message)
+    return journal
+
+
 class ReceiptStore:
     """Hold an exclusive local lock and atomically replace the receipt file.
 
@@ -69,14 +98,7 @@ class ReceiptStore:
             raise PublicationError(message) from exc
         os.close(descriptor)
         try:
-            if self.path.exists():
-                loaded = ReceiptJournal.model_validate_json(self.path.read_bytes())
-                if loaded.repository != self.journal.repository or any(
-                    key != receipt.remedy_id for key, receipt in loaded.receipts.items()
-                ):
-                    message = "Receipt journal repository or remedy identities do not match"
-                    raise PublicationError(message)  # noqa: TRY301 - release lock on validation failure
-                self.journal = loaded
+            self.journal = load_receipts(self.path, self.journal.repository)
             self.save()
         except BaseException:
             self.lock_path.unlink()

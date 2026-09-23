@@ -68,3 +68,24 @@ def test_exception_releases_lock(tmp_path):
             raise RuntimeError("interrupted")
     with ReceiptStore(path, "acme/demo"):
         pass
+
+
+@pytest.mark.parametrize("grows", [False, True])
+def test_load_receipts_checks_size_before_read_and_bounds_growth(
+    tmp_path, monkeypatch, track_file_reads, grows
+):
+    from types import SimpleNamespace
+    from RepoRemedy.publication.receipts import MAX_RECEIPT_BYTES, load_receipts
+
+    path = tmp_path / "large.json"
+    with path.open("wb") as stream:
+        stream.truncate(MAX_RECEIPT_BYTES + 1)
+    tracked = track_file_reads(path)
+    if grows:
+        monkeypatch.setattr("RepoRemedy.publication.receipts.os.fstat", lambda fd: SimpleNamespace(st_size=0))
+    with pytest.raises(PublicationError, match="size limit"):
+        load_receipts(path, "acme/demo")
+    if grows:
+        tracked.read.assert_called_once_with(MAX_RECEIPT_BYTES + 1)
+    else:
+        tracked.read.assert_not_called()
