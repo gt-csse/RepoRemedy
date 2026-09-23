@@ -55,6 +55,7 @@ def test_inspect_select_inputs_review_save_resume_publish_retry(tmp_path, monkey
             await pilot.click("#continue")
             await wait_for_worker(app, pilot)
             assert app.query_one("#pages", ContentSwitcher).current == "selection"
+            assert "Evidence: SecurityPolicy" in app.query_one("#details", TextArea).text
             choices = app.query_one("#candidates", SelectionList)
             choices.focus()
             await pilot.press("space")
@@ -290,9 +291,11 @@ def test_keyboard_selection_search_resize_and_review(tmp_path, size):
             assert app.query_one("#search", Input).value == "fa"
             assert plan.selected == ["security-policy"]
             assert app.visible_indices == []
+            assert "No matching remedies" in app.query_one("#details", TextArea).text
             app.query_one("#search", Input).value = ""
             await pilot.press("escape")
             assert app.focused is app.query_one("#candidates")
+            assert "Evidence: SecurityPolicy" in app.query_one("#details", TextArea).text
             await pilot.press("f")
             assert app.focused is app.query_one("#filter")
             app.query_one("#candidates").focus()

@@ -407,7 +407,9 @@ class RemedyApp(App[None]):
         )
         self.query_one("#review", Button).label = f"Review {len(self.plan.selected)}"
         self.show_visible_count()
-        if not options:
+        if candidates.highlighted is not None:
+            self.show_candidate_details(candidates.get_option_at_index(candidates.highlighted).value)
+        else:
             self.query_one("#details", TextArea).load_text("No matching remedies. Change search or filter.")
 
     @on(RemedySelection.Resized)
@@ -438,7 +440,11 @@ class RemedyApp(App[None]):
     def show_details(self, event: SelectionList.SelectionHighlighted[int]) -> None:
         """Show reasons and evidence even when the finding cannot be selected."""
         self.call_after_refresh(self.show_visible_count)
-        proposal = self.plan.get_proposals()[event.selection.value]
+        self.show_candidate_details(event.selection.value)
+
+    def show_candidate_details(self, index: int) -> None:
+        """Refresh evidence even when a rebuilt list retains the same highlighted row."""
+        proposal = self.plan.get_proposals()[index]
         detail = "\n".join(
             [
                 *(f"Evidence: {f.check} ({f.location}): {f.evidence}" for f in proposal.findings),
@@ -717,7 +723,7 @@ class RemedyApp(App[None]):
             "PUBLICATION COMPLETE" if journal else "PUBLICATION STOPPED"
         )
         self.show_notice(
-            f"Results: {self.plan.get_receipt_path(self.path)}. "
+            f"Results saved: {self.plan.get_receipt_path(self.path).name}. "
             + (
                 "Draft PRs await maintainer review; issues await action."
                 if journal
