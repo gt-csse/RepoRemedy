@@ -7,6 +7,9 @@ import webbrowser
 
 import httpx
 from rich.text import Text
+from textual.binding import Binding
+from textual.theme import Theme
+from textual.message import Message
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -15,7 +18,6 @@ from textual.widgets import (
     Checkbox,
     ContentSwitcher,
     Footer,
-    Header,
     Input,
     Label,
     OptionList,
@@ -29,105 +31,268 @@ from textual.widgets.selection_list import Selection
 
 from RepoRemedy.context.github import ContextError
 from RepoRemedy.plan import RemedyPlan, save_plan
-from RepoRemedy.publication.publish import publish_remedies
-from RepoRemedy.publication.receipts import PublicationReceipt, ReceiptJournal  # noqa: TC001 - Textual callbacks
-from RepoRemedy.review import ReviewScreen, render_proposal
+from RepoRemedy.publication.publish import (
+    PublicationPreflight,
+    preflight_remedies,
+    publish_remedies,
+)
+from RepoRemedy.publication.receipts import (
+    PublicationReceipt,
+    ReceiptJournal,
+    load_receipts,
+)
+from RepoRemedy.review import ReviewScreen, get_remedy_name
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+class RemedySelection(SelectionList[int]):
+    """Notify the app when library layout changes require reflowing column labels."""
+
+    class Resized(Message):
+        """The selection viewport has a new terminal size."""
+
+    def on_resize(self) -> None:
+        """Let the app reformat labels after Textual has completed layout."""
+        self.post_message(self.Resized())
 
 
 class RemedyApp(App[None]):
     """Keep UI state local; run context collection and publication off the UI thread."""
 
     TITLE = "RepoRemedy"
-    CSS = """
-    Screen { background: $surface; }
-    #pages { height: 1fr; }
-    #repository, #summary, #publication-summary, #notice { height: auto; padding: 1; }
-    .buttons { height: auto; min-height: 3; }
-    .buttons Button { margin: 0 1 0 0; min-width: 10; }
-    #filters { height: 3; }
-    #search { width: 2fr; }
-    #filter { width: 1fr; }
-    #candidates { width: 1fr; }
-    #details { width: 1fr; }
-    #selection-body { height: 1fr; }
-    #dialog { width: 95%; height: 95%; background: $surface; border: solid $primary; padding: 1; }
-    ModalScreen { align: center middle; }
-    #preview { height: 1fr; min-height: 8; }
-    #fields { height: 1fr; min-height: 6; }
-    .input-field { height: 5; }
-    #findings, #evidence, #results { height: 1fr; }
-    #confirmation { height: auto; }
-    """
-    BINDINGS: ClassVar = [("ctrl+s", "save", "Save"), ("ctrl+q", "quit", "Save / exit")]
+    CSS_PATH = "tui.tcss"
+    BINDINGS: ClassVar = [
+        Binding("ctrl+s", "save", "Save"),
+        Binding("ctrl+q", "quit", "Save / exit"),
+        Binding("slash", "search", "Search", key_display="/"),
+        Binding("f", "filter", "Filter"),
+        Binding("a", "select_filtered", "Select filtered"),
+        Binding("enter", "continue", "Review / continue", priority=True),
+        Binding("escape", "selection", "Back"),
+    ]
 
-    def __init__(self, plan: RemedyPlan, path: Path, *, publish_only: bool = False) -> None:
+    def __init__(
+        self, plan: RemedyPlan, path: Path, *, publish_only: bool = False, resumed: bool = False
+    ) -> None:
         super().__init__()
+        self.HORIZONTAL_BREAKPOINTS = [(0, "compact"), (100, "wide")]
+        self.register_theme(
+            Theme(
+                name="reporemedy",
+                primary="#72D5E5",
+                secondary="#A6B5C3",
+                accent="#72D5E5",
+                foreground="#E6EDF3",
+                background="#101820",
+                surface="#101820",
+                panel="#202D38",
+                success="#9DDEAE",
+                warning="#F1C778",
+                error="#F08C8C",
+            )
+        )
+        self.theme = "reporemedy"
         self.plan = plan
         self.path = path
         self.publish_only = publish_only
+        self.resumed = resumed
         self.busy = False
         self.visible_indices: list[int] = []
         self.results: list[PublicationReceipt] = []
+        self.preflight: PublicationPreflight | None = None
+        self.checked_plan: str | None = None
 
     def compose(self) -> ComposeResult:
-        """Use library controls for selection, previews, forms, progress and results."""
-        yield Header()
-        yield Label(self.plan.report.repository, id="repository", markup=False)
-        with ContentSwitcher(
-            initial="publication" if self.publish_only else "selection" if self.plan.bundle else "inspection",
-            id="pages",
-        ):
+        """Arrange library controls in the mockup's full-width terminal layout."""
+        yield Label("RepoRemedy  /  INSPECT · SELECT · REVIEW · PUBLISH", id="app-title")
+        yield Label(
+            f"Repository  {self.plan.report.repository}    Mode: Templates", id="repository", markup=False
+        )
+        with ContentSwitcher(initial="inspection", id="pages"):
             with Vertical(id="inspection"):
-                yield Label("Audit findings (offline). Continue to collect repository context.")
+                yield Label("REPORT LOADED", classes="heading")
+                yield Label(
+                    f"Source  {self.plan.report.source.path.name}\n"
+                    f"Findings  {len(self.plan.report.issues)}  ·  Browse evidence before continuing",
+                    classes="muted",
+                    markup=False,
+                )
                 yield OptionList(
-                    *[
-                        Option(Text(f"{finding.origin} / {finding.check}: {finding.status}"))
-                        for finding in self.plan.report.issues
-                    ],
+                    *[Option(Text(f"{f.check:<28} {f.evidence}")) for f in self.plan.report.issues],
                     id="findings",
                 )
-                yield TextArea(read_only=True, id="evidence")
-                yield Button("Select remedies", id="continue", variant="primary")
+                yield TextArea(read_only=True, id="evidence", show_cursor=False)
+                yield Button("Continue to remedy selection", id="continue", variant="primary")
             with Vertical(id="selection"):
+                yield Label("SELECT REMEDIES", classes="heading")
                 yield Label(id="summary", markup=False)
                 with Horizontal(id="filters"):
-                    yield Input(placeholder="Search remedies or evidence", id="search")
+                    yield Input(placeholder="Search remedies or evidence  (/)", id="search")
                     yield Select(
                         [(s, s) for s in ["All", "Ready", "Needs input", "Selected"]],
                         value="All",
                         allow_blank=False,
                         id="filter",
                     )
-                with Horizontal(id="selection-body"):
-                    yield SelectionList[int](id="candidates")
-                    yield TextArea(read_only=True, id="details")
+                yield Label(id="column-headings", classes="muted", markup=False)
+                yield RemedySelection(id="candidates")
+                yield Label(id="visible-count", classes="muted", markup=False)
+                yield TextArea(read_only=True, id="details", show_cursor=False)
                 with Horizontal(classes="buttons"):
                     yield Button("Select filtered", id="select-filtered")
                     yield Button("Clear filtered", id="clear-filtered")
                     yield Button("Review", id="review", variant="primary")
                     yield Button("Publish", id="prepare-publication")
                     yield Button("Save / exit", id="save-exit")
+            yield from self.compose_session_pages()
             with Vertical(id="publication"):
+                yield Label("PUBLICATION CHECK", id="publication-title", classes="heading")
                 yield Label(id="publication-summary", markup=False)
-                yield Checkbox("Publish exactly these selections to the repository above", id="confirmation")
+                with Vertical(id="publication-checks"):
+                    yield Label(id="preflight-status", markup=False, classes="muted")
+                    yield TextArea(read_only=True, id="preflight-details", show_cursor=False)
+                    yield Checkbox(
+                        "Publish exactly these selections to this repository",
+                        id="confirmation",
+                        disabled=True,
+                    )
+                    yield Button("Publish selected", id="publish", variant="primary", disabled=True)
+                with Vertical(id="publication-results"):
+                    yield ProgressBar(total=len(self.plan.selected), show_eta=False, id="progress")
+                    yield Label(id="result-counts", markup=False)
+                    yield Label(f"{'REMEDY':<34}{'RESULT':<18}ACTION", classes="muted")
+                    yield OptionList(id="results")
+                    yield Label(id="result-link", markup=False, classes="muted")
+                    yield Button("Open selected result", id="open-result", disabled=True)
                 with Horizontal(classes="buttons"):
-                    yield Button("Publish selected", id="publish", variant="primary")
+                    yield Button("Check again / retry", id="check-again")
                     yield Button("Back to selections", id="back-to-selection")
-                yield ProgressBar(total=len(self.plan.selected), show_eta=False, id="progress")
-                yield OptionList(id="results")
-                yield Button("Open selected result", id="open-result", disabled=True)
-        yield Label(id="notice", markup=False)
+                    yield Button("Save / exit", id="publication-exit")
+        yield Label("No publication has been authorized.", id="notice", markup=False)
         yield Footer()
 
+    def compose_session_pages(self) -> ComposeResult:
+        """Keep save and restore summaries together, separate from selection controls."""
+        with Vertical(id="review-complete"):
+            yield Label("REVIEW COMPLETE", classes="heading success")
+            yield Label(id="review-summary", markup=False, classes="session-summary")
+            yield Label("No issues or PRs have been published by this review.", classes="muted")
+            with Horizontal(classes="buttons"):
+                yield Button("Save and exit", id="finish-save", variant="primary")
+                yield Button("Continue to publication", id="finish-publish")
+                yield Button("Change selections", id="finish-back")
+        with Vertical(id="resume"):
+            yield Label("SAVED SESSION RESTORED", classes="heading")
+            yield Label(id="resume-summary", markup=False, classes="session-summary")
+            yield Label("Changing content requires a new review of the affected proposals.", classes="muted")
+            yield OptionList(
+                "Continue with the saved publication plan",
+                "Review selected proposals",
+                "Change selections or inputs",
+                "Save and exit",
+                id="resume-options",
+            )
+
     def on_mount(self) -> None:
-        """Restore a saved plan without implicitly publishing it."""
+        """Restore local state; only an explicit publication view performs preflight."""
+        self.watch(self.query_one("#candidates"), "scroll_y", self.show_visible_count, init=False)
+        self.query_one("#publication-results").display = False
+        self.query_one("#findings", OptionList).highlighted = 0 if self.plan.report.issues else None
         if self.plan.bundle:
-            self.show_candidates()
+            self.show_page("selection")
+            self.call_after_refresh(self.show_candidates)
+        if self.resumed:
+            self.query_one("#resume-summary", Label).update(self.get_session_summary())
+            self.show_page("resume")
         if self.publish_only:
             self.prepare_publication()
+
+    def show_page(self, page: str) -> None:
+        """Move between workflow states and focus the primary keyboard control."""
+        self.query_one("#pages", ContentSwitcher).current = page
+        primary = {
+            "inspection": "#findings",
+            "selection": "#candidates",
+            "resume": "#resume-options",
+            "review-complete": "#finish-save",
+            "publication": "#back-to-selection",
+        }
+        self.query_one(primary[page]).focus()
+        self.refresh_bindings()
+
+    def get_session_summary(self) -> str:
+        """Show counts derived from actual selections, never illustrative mockup data."""
+        proposals = [self.plan.get_proposal(i) for i in self.plan.selected]
+        reviewed = sum(self.plan.is_reviewed(i) for i in self.plan.selected)
+        ready = sum(p.status == "ready" for p in proposals)
+        prs = sum(p.route == "pr" for p in proposals)
+        return (
+            f"Selected         {len(proposals)} / {len(self.plan.get_proposals())}\n"
+            f"Reviewed         {reviewed} / {len(proposals)}\n"
+            f"Ready            {ready}\nNeeds attention  {len(proposals) - ready}\n"
+            f"Draft PRs        {prs}\nIssues           {len(proposals) - prs}\n\nPlan  {self.path}"
+        )
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:  # noqa: ARG002 - Textual signature
+        """Keep single-letter shortcuts out of forms and limit them to their step."""
+        if action in {"save", "quit"}:
+            return True
+        if len(self.screen_stack) > 1 or self.busy:
+            return None
+        if action == "selection" and isinstance(self.focused, Input):
+            return True
+        if isinstance(self.focused, Input | TextArea | Select):
+            return None
+        page = self.query_one("#pages", ContentSwitcher).current
+        if action in {"search", "filter", "select_filtered"}:
+            return True if page == "selection" else None
+        if action == "continue":
+            return True if self.focused and self.focused.id in {"findings", "candidates"} else None
+        if action == "selection":
+            return True if page in {"resume", "review-complete", "publication"} else None
+        return True
+
+    def action_search(self) -> None:
+        """Focus the library search input."""
+        self.query_one("#search", Input).focus()
+
+    def action_filter(self) -> None:
+        """Focus the library filter menu."""
+        self.query_one("#filter", Select).focus()
+
+    def action_select_filtered(self) -> None:
+        """Select eligible rows without changing hidden selections."""
+        self.set_filtered(selected=True)
+
+    def action_continue(self) -> None:
+        """Continue inspection or review selected remedies with Enter."""
+        if self.query_one("#pages", ContentSwitcher).current == "inspection":
+            self.continue_inspection()
+        else:
+            self.review_selected()
+
+    def action_selection(self) -> None:
+        """Return to selections without changing approvals."""
+        if isinstance(self.focused, Input):
+            self.query_one("#candidates").focus()
+        else:
+            self.return_to_selection()
+
+    @on(OptionList.OptionSelected, "#resume-options")
+    def resume_session(self, event: OptionList.OptionSelected) -> None:
+        """Offer publication, review, editing or save/exit after restoration."""
+        match event.option_index:
+            case 0:
+                self.prepare_publication()
+            case 1:
+                self.return_to_selection()
+                self.review_selected()
+            case 2:
+                self.return_to_selection()
+            case 3:
+                self.call_later(self.action_quit)
 
     def show_notice(self, message: str) -> None:
         """Display plain text without interpreting report or exception markup."""
@@ -142,6 +307,8 @@ class RemedyApp(App[None]):
     @on(Button.Pressed, "#continue")
     def continue_inspection(self) -> None:
         """Start context collection only when the user continues inspection."""
+        if self.busy:
+            return
         self.busy = True
         self.query_one("#continue", Button).disabled = True
         self.show_notice("Collecting repository context...")
@@ -163,8 +330,8 @@ class RemedyApp(App[None]):
         self.busy = False
         self.query_one("#continue", Button).disabled = False
         if succeeded:
-            self.query_one("#pages", ContentSwitcher).current = "selection"
-            self.show_candidates()
+            self.show_page("selection")
+            self.call_after_refresh(self.show_candidates)
             self.show_notice("Select remedies, complete inputs, then review. Nothing has been published.")
         else:
             self.show_notice(
@@ -175,6 +342,8 @@ class RemedyApp(App[None]):
     @on(Select.Changed, "#filter")
     def show_candidates(self) -> None:
         """Filter views without losing selections outside the current view."""
+        if not self.query("#candidates"):
+            return
         query = self.query_one("#search", Input).value.casefold()
         status = self.query_one("#filter", Select).value
         candidates = self.query_one("#candidates", SelectionList)
@@ -186,10 +355,14 @@ class RemedyApp(App[None]):
         selectable = self.plan.get_selectable_ids()
         self.visible_indices = []
         options = []
+        name_width = max(16, candidates.size.width - 33)
+        self.query_one("#column-headings", Label).update(f"{'REMEDY':<{name_width}}  {'ACTION':<10} STATUS")
         for index, proposal in enumerate(self.plan.get_proposals()):
             identifier = proposal.remedy_id
-            name = identifier or proposal.findings[0].check
-            searchable = " ".join([name, *(f.evidence for f in proposal.findings)]).casefold()
+            name = get_remedy_name(identifier) if identifier else proposal.findings[0].check
+            searchable = " ".join(
+                [name, identifier or "", *(f.evidence for f in proposal.findings)]
+            ).casefold()
             if query not in searchable or (
                 (status == "Ready" and proposal.status != "ready")
                 or (status == "Needs input" and proposal.status != "needs-input")
@@ -197,15 +370,18 @@ class RemedyApp(App[None]):
             ):
                 continue
             self.visible_indices.append(index)
-            label = f"{name}  / {proposal.route} / {proposal.status}"
+            label = Text(name, style="dim" if identifier not in selectable else "")
+            label.truncate(name_width, overflow="ellipsis", pad=True)
+            route = "Draft PR" if proposal.route == "pr" else "Issue"
+            status_text = proposal.status.replace("-", " ").capitalize()
             if identifier not in selectable:
-                label += " (not selectable; unsupported, unavailable or duplicate)"
+                status_text = "Not selectable"
+            color = "#9DDEAE" if proposal.status == "ready" else "#F1C778"
+            label.append(f"  {route:<10} ")
+            label.append(status_text, style=color if identifier in selectable else "dim")
             options.append(
                 Selection(
-                    Text(label),
-                    index,
-                    identifier in self.plan.selected,
-                    disabled=identifier not in selectable,
+                    label, index, identifier in self.plan.selected, disabled=identifier not in selectable
                 )
             )
         candidates.clear_options().add_options(options)
@@ -216,11 +392,35 @@ class RemedyApp(App[None]):
             if options
             else None
         )
-        reviewed = sum(self.plan.is_reviewed(identifier) for identifier in self.plan.selected)
+        proposals = self.plan.get_proposals()
+        eligible = [p for p in proposals if p.remedy_id in selectable]
+        ready = sum(p.status == "ready" for p in eligible)
+        needs_input = sum(p.status == "needs-input" for p in eligible)
+        needs_review = len(eligible) - ready - needs_input
+        unavailable = len(proposals) - len(eligible)
+        reviewed = sum(self.plan.is_reviewed(i) for i in self.plan.selected)
         self.query_one("#summary", Label).update(
-            f"{len(self.plan.selected)} / {len(self.plan.get_proposals())} selected; "
-            f"{reviewed} reviewed. Mode: templates."
+            f"{len(self.plan.selected)} / {len(proposals)} selected    ·    {reviewed} reviewed\n"
+            f"{ready} ready  ·  {needs_input} need input  ·  {needs_review} need review  ·  {unavailable} not selectable"
         )
+        self.query_one("#review", Button).label = f"Review {len(self.plan.selected)}"
+        self.show_visible_count()
+        if not options:
+            self.query_one("#details", TextArea).load_text("No matching remedies. Change search or filter.")
+
+    @on(RemedySelection.Resized)
+    def resize_candidates(self) -> None:
+        """Fit columns to the actual viewport after Textual applies its breakpoints."""
+        if self.query("#candidates"):
+            self.call_after_refresh(self.show_candidates)
+
+    def show_visible_count(self) -> None:
+        """Describe the visible row range within the filtered list."""
+        candidates = self.query_one("#candidates", SelectionList)
+        count = len(self.visible_indices)
+        start = min(count, int(candidates.scroll_y) + 1)
+        end = min(count, int(candidates.scroll_y) + candidates.scrollable_content_region.height)
+        self.query_one("#visible-count", Label).update(f"Showing {start}-{end} of {count} matching remedies")
 
     @on(SelectionList.SelectionToggled, "#candidates")
     def toggle_candidate(self, event: SelectionList.SelectionToggled[int]) -> None:
@@ -235,33 +435,47 @@ class RemedyApp(App[None]):
     @on(SelectionList.SelectionHighlighted, "#candidates")
     def show_details(self, event: SelectionList.SelectionHighlighted[int]) -> None:
         """Show reasons and evidence even when the finding cannot be selected."""
+        self.call_after_refresh(self.show_visible_count)
         proposal = self.plan.get_proposals()[event.selection.value]
-        if proposal.remedy_id in self.plan.get_selectable_ids():
-            assert proposal.remedy_id is not None
-            detail = render_proposal(self.plan, proposal.remedy_id)
-        else:
-            detail = "\n".join([*(f.evidence for f in proposal.findings), *proposal.reasons])
+        detail = "\n".join(
+            [
+                *(f"Evidence: {f.check} ({f.location}): {f.evidence}" for f in proposal.findings),
+                *proposal.reasons,
+            ]
+        )
         self.query_one("#details", TextArea).load_text(detail)
 
     @on(Button.Pressed, "#select-filtered")
     @on(Button.Pressed, "#clear-filtered")
     def select_filtered(self, event: Button.Pressed) -> None:
         """Apply bulk actions only to the currently visible eligible remedies."""
+        self.set_filtered(selected=event.button.id == "select-filtered")
+
+    def set_filtered(self, *, selected: bool) -> None:
+        """Apply a bulk selection to visible eligible IDs only."""
         selectable = self.plan.get_selectable_ids()
         for index in self.visible_indices:
             identifier = self.plan.get_proposals()[index].remedy_id
             if identifier in selectable:
                 assert identifier is not None
-                self.plan.set_selected(identifier, selected=event.button.id == "select-filtered")
+                self.plan.set_selected(identifier, selected=selected)
         self.show_candidates()
 
     @on(Button.Pressed, "#review")
     def review_selected(self) -> None:
         """Review the saved order of explicit selections."""
         if self.plan.selected:
-            self.push_screen(ReviewScreen(self.plan), lambda _: self.show_candidates())
+            self.push_screen(ReviewScreen(self.plan), self.finish_review)
         else:
             self.show_notice("Select at least one remedy to review.")
+
+    def finish_review(self, _result: None = None) -> None:
+        """Show a dedicated summary only when every selected proposal is reviewed."""
+        self.show_candidates()
+        if self.plan.selected and all(self.plan.is_reviewed(i) for i in self.plan.selected):
+            self.query_one("#review-summary", Label).update(self.get_session_summary())
+            self.show_page("review-complete")
+            self.show_notice("Review complete. Save the plan or continue to publication checks.")
 
     def persist(self) -> bool:
         """Keep the session open if saving fails instead of losing the user's work."""
@@ -279,6 +493,8 @@ class RemedyApp(App[None]):
             self.persist()
 
     @on(Button.Pressed, "#save-exit")
+    @on(Button.Pressed, "#finish-save")
+    @on(Button.Pressed, "#publication-exit")
     async def action_quit(self) -> None:
         """Do not exit during a remote operation or discard an unsaved session."""
         if self.busy:
@@ -287,50 +503,148 @@ class RemedyApp(App[None]):
             self.exit()
 
     @on(Button.Pressed, "#prepare-publication")
+    @on(Button.Pressed, "#finish-publish")
+    @on(Button.Pressed, "#check-again")
     def prepare_publication(self) -> None:
-        """Require all selected content to pass review before confirmation."""
+        """Validate review, save the plan and perform read-only checks before consent."""
+        if self.busy:
+            return
         try:
             self.plan.validate_publication()
         except ContextError, ValueError:
             self.show_notice(
                 "Every selection must be ready and reviewed. Complete inputs or deselect blocked items."
             )
-            self.query_one("#pages", ContentSwitcher).current = "selection"
+            self.return_to_selection()
             return
         if not self.persist():
             return
-        self.query_one("#pages", ContentSwitcher).current = "publication"
+        self.preflight = None
+        self.checked_plan = None
+        self.show_page("publication")
+        self.query_one("#publication-title", Label).update("PUBLICATION CHECK")
         prs = sum(self.plan.get_proposal(i).route == "pr" for i in self.plan.selected)
         self.query_one("#publication-summary", Label).update(
-            f"Publish {len(self.plan.selected)} selections: {prs} draft PRs, "
-            f"{len(self.plan.selected) - prs} issues. Existing matches will be reused.\n"
-            "Repository state and permissions are rechecked before each new publication."
+            f"Selected  {len(self.plan.selected)} reviewed remedies    ·    {prs} draft PRs / {len(self.plan.selected) - prs} issues"
         )
+        self.query_one("#publication-checks").display = True
+        self.query_one("#publication-results").display = False
         self.query_one("#confirmation", Checkbox).value = False
+        self.query_one("#confirmation", Checkbox).disabled = True
+        self.query_one("#publish", Button).disabled = True
+        self.query_one("#preflight-status", Label).update(
+            "[ok] Saved proposals and approvals match.\nChecking repository evidence, routes, receipts and existing matches..."
+        )
+        self.query_one("#preflight-details", TextArea).load_text("")
+        self.set_publication_busy(busy=True)
+        self.show_notice("Read-only checks. No issues, PRs, branches or receipts are created.")
+        self.check_publication()
+
+    def set_publication_busy(self, *, busy: bool) -> None:
+        """Prevent edits, retries and exit controls during network operations."""
+        self.busy = busy
+        for identifier in ("check-again", "back-to-selection", "publication-exit"):
+            self.query_one(f"#{identifier}", Button).disabled = busy
+        self.refresh_bindings()
+
+    @work(thread=True)
+    def check_publication(self) -> None:
+        """Run preflight off the event loop without authorizing any writes."""
+        try:
+            bundle = self.plan.validate_publication()
+            with httpx.Client(trust_env=False) as client:
+                result = preflight_remedies(
+                    bundle,
+                    self.plan.selected,
+                    self.plan.report.repository,
+                    self.plan.get_receipt_path(self.path),
+                    client,
+                    token=os.environ.get(self.plan.token_env, ""),
+                )
+        except ContextError, OSError, ValueError:
+            self.call_from_thread(self.finish_preflight, None)
+        else:
+            self.call_from_thread(self.finish_preflight, result)
+
+    def finish_preflight(self, result: PublicationPreflight | None) -> None:
+        """Show only observed preflight results; failed checks cannot enable consent."""
+        self.set_publication_busy(busy=False)
+        self.preflight = result
+        if result is None:
+            self.query_one("#preflight-status", Label).update(
+                "Checks could not finish. Verify the token, plan, receipt journal and repository access; then check again."
+            )
+            self.show_notice("Publication is blocked. Nothing has been published.")
+            return
+        reused = sum(item.existing is not None for item in result.items)
+        blocked = sum(item.error is not None for item in result.items)
+        lines = []
+        for item in result.items:
+            outcome = (
+                f"BLOCKED: {item.error}"
+                if item.error
+                else f"Existing {'PR' if item.existing.route == 'pr' else 'issue'} #{item.existing.number} reused"
+                if item.existing
+                else "Ready to create · repository route, branch and evidence checks passed"
+            )
+            lines.append(f"{get_remedy_name(item.remedy_id)}\n  {outcome}")
+        self.query_one("#preflight-details", TextArea).load_text("\n\n".join(lines))
+        self.query_one("#preflight-status", Label).update(
+            f"[ok] Saved proposals and approvals match.    Checked {result.checked_at:%H:%M:%S} UTC\n"
+            f"Expected: {len(result.items) - reused - blocked} new · {reused} reused · {blocked} blocked\n"
+            "Existing matches require no creation. New writes are checked again during publication."
+        )
+        allowed = result.can_publish()
+        self.query_one("#confirmation", Checkbox).disabled = not allowed
+        self.query_one("#publish", Button).disabled = not allowed
+        if allowed:
+            self.checked_plan = self.plan.model_dump_json()
+            self.query_one("#confirmation", Checkbox).focus()
+        self.show_notice(
+            "Confirm to publish these selections. GitHub may still reject a write."
+            if allowed
+            else "Resolve blocked checks before publication; completed matches will be reused."
+        )
 
     @on(Button.Pressed, "#back-to-selection")
+    @on(Button.Pressed, "#finish-back")
     def return_to_selection(self) -> None:
-        """Allow edits before publication or after a completed attempt."""
+        """Invalidate confirmation when leaving the publication screen."""
         if not self.busy:
-            self.query_one("#pages", ContentSwitcher).current = "selection"
-            self.show_candidates()
+            self.preflight = None
+            self.checked_plan = None
+            self.query_one("#confirmation", Checkbox).value = False
+            self.show_page("selection" if self.plan.bundle else "inspection")
+            self.call_after_refresh(self.show_candidates)
 
     @on(Button.Pressed, "#publish")
     def start_publication(self) -> None:
-        """Require explicit confirmation for each publication attempt."""
+        """Require successful current-plan preflight and fresh explicit confirmation."""
+        if self.busy:
+            return
+        if (
+            not self.preflight
+            or not self.preflight.can_publish()
+            or self.checked_plan != self.plan.model_dump_json()
+        ):
+            self.show_notice("Run publication checks again before confirming this plan.")
+            return
         if not self.query_one("#confirmation", Checkbox).value:
             self.show_notice("Check the confirmation box to publish these selections.")
             return
-        if self.busy:
-            return
         self.results = []
         self.query_one("#results", OptionList).clear_options()
+        self.query_one("#result-link", Label).update("")
+        self.query_one("#open-result", Button).disabled = True
         self.query_one("#progress", ProgressBar).update(total=len(self.plan.selected), progress=0)
-        self.busy = True
+        self.query_one("#publication-title", Label).update("PUBLISHING")
+        self.query_one("#publication-checks").display = False
+        self.query_one("#publication-results").display = True
         self.query_one("#publish", Button).disabled = True
-        self.query_one("#back-to-selection", Button).disabled = True
         self.query_one("#confirmation", Checkbox).disabled = True
-        self.show_notice("Publishing. Completed results are saved before the next remedy starts.")
+        self.set_publication_busy(busy=True)
+        self.show_result_counts()
+        self.show_notice("Saving each completed result before processing the next remedy.")
         self.publish_selected()
 
     @work(thread=True)
@@ -357,29 +671,65 @@ class RemedyApp(App[None]):
     def record_result(self, receipt: PublicationReceipt) -> None:
         """Display only durable completed results and their actual returned links."""
         self.results.append(receipt)
-        self.query_one("#results", OptionList).add_option(
-            Option(Text(f"{receipt.remedy_id}: {receipt.status} ({receipt.route}) {receipt.url}"))
+        label = Text(get_remedy_name(receipt.remedy_id))
+        label.truncate(32, overflow="ellipsis", pad=True)
+        label.append("  ")
+        label.append(
+            f"{'Created' if receipt.status == 'created' else 'Existing reused':<18}",
+            style="#9DDEAE" if receipt.status == "created" else "#72D5E5",
         )
+        label.append("Draft PR" if receipt.route == "pr" else "Issue")
+        self.query_one("#results", OptionList).add_option(Option(label))
         if self.query_one("#results", OptionList).highlighted is None:
             self.query_one("#results", OptionList).highlighted = 0
         self.query_one("#progress", ProgressBar).update(progress=len(self.results))
         self.query_one("#open-result", Button).disabled = False
+        self.show_result_counts()
+
+    def show_result_counts(self, *, failed: int = 0, unresolved: int = 0) -> None:
+        """Distinguish completed results from failed, uncertain and unprocessed work."""
+        created = sum(r.status == "created" for r in self.results)
+        remaining = len(self.plan.selected) - len(self.results) - failed - unresolved
+        self.query_one("#result-counts", Label).update(
+            f"Created  {created}    Reused  {len(self.results) - created}    "
+            f"Failed / blocked  {failed}    Unresolved  {unresolved}    Remaining  {remaining}"
+        )
 
     def finish_publication(self, journal: ReceiptJournal | None) -> None:
         """Preserve completed results when a later remedy needs reconciliation."""
-        self.busy = False
-        self.query_one("#publish", Button).disabled = False
-        self.query_one("#back-to-selection", Button).disabled = False
-        self.query_one("#confirmation", Checkbox).disabled = False
+        self.set_publication_busy(busy=False)
+        self.preflight = None
+        self.checked_plan = None
         self.query_one("#confirmation", Checkbox).value = False
-        created = sum(r.status == "created" for r in self.results)
+        failed = unresolved = 0
+        if journal is None and len(self.results) < len(self.plan.selected):
+            try:
+                saved = load_receipts(self.plan.get_receipt_path(self.path), self.plan.report.repository)
+                current = saved.receipts.get(self.plan.selected[len(self.results)])
+                unresolved = int(current is not None and current.status in {"pending", "uncertain"})
+                failed = 1 - unresolved
+            except OSError, ValueError:
+                unresolved = 1
+        self.show_result_counts(failed=failed, unresolved=unresolved)
+        self.query_one("#publication-title", Label).update(
+            "PUBLICATION COMPLETE" if journal else "PUBLICATION STOPPED"
+        )
         self.show_notice(
-            f"{created} created, {len(self.results) - created} reused. "
+            f"Results: {self.plan.get_receipt_path(self.path)}. "
             + (
-                "Complete. Draft PRs await maintainer review."
+                "Draft PRs await maintainer review; issues await action."
                 if journal
-                else "Stopped. Inspect receipts before retrying; unfinished selections remain saved."
+                else "Stopped. Inspect receipts, then check again before retrying."
             )
+        )
+        self.query_one("#results" if self.results else "#check-again").focus()
+
+    @on(OptionList.OptionHighlighted, "#results")
+    def show_result_link(self, event: OptionList.OptionHighlighted) -> None:
+        """Keep long returned URLs readable without widening every result row."""
+        receipt = self.results[event.option_index]
+        self.query_one("#result-link", Label).update(
+            f"{get_remedy_name(receipt.remedy_id)}\n{receipt.url or ''}"
         )
 
     @on(Button.Pressed, "#open-result")

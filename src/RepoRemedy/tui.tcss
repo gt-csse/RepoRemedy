@@ -1,0 +1,57 @@
+Screen { background: #101820; color: #E6EDF3; }
+#app-title { width: 1fr; height: 3; padding: 1 2; background: #202D38; text-style: bold; }
+#repository { height: auto; padding: 1 2 0 2; color: #A6B5C3; }
+#pages { height: 1fr; padding: 0 2; }
+#pages > Vertical { padding: 1 0 0 0; }
+.heading { color: #72D5E5; text-style: bold; height: auto; margin-bottom: 1; }
+.success { color: #9DDEAE; }
+.muted { color: #A6B5C3; height: auto; }
+#summary, #publication-summary, #preflight-status, #result-counts { height: auto; margin-bottom: 1; }
+#filters { height: 3; margin-bottom: 1; }
+#search { width: 2fr; }
+#filter { width: 1fr; }
+Input, SelectCurrent { background: #101820; border: tall #344753; }
+Input:focus, Select:focus > SelectCurrent { border: tall #72D5E5; }
+SelectionList, OptionList { background: #101820; border: none; padding: 0; }
+SelectionList:focus, OptionList:focus { border: none; }
+SelectionList > .option-list--option-highlighted, OptionList > .option-list--option-highlighted { background: #194353; color: #E6EDF3; text-style: bold; }
+SelectionList > .selection-list--button-selected { color: #9DDEAE; background: #101820; }
+#candidates, #findings, #results { height: 1fr; min-height: 3; }
+#column-headings, #visible-count { height: 1; }
+#column-headings { padding-left: 4; }
+#details, #evidence { height: 5; margin: 1 0; border: none; background: #101820; }
+TextArea { background: #101820; border: solid #344753; }
+TextArea:focus { border: solid #72D5E5; }
+.buttons { height: 3; min-height: 3; margin-top: 1; }
+Button { height: 1; min-width: 8; min-height: 1; border: none; padding: 0 1; margin: 0 1 0 0; background: #202D38; color: #72D5E5; }
+Button:focus { background: #194353; text-style: bold; }
+Button.-primary { background: #194353; color: #E6EDF3; }
+Button:disabled { color: #A6B5C3 50%; background: #101820; }
+Checkbox { background: #101820; border: none; height: auto; margin: 1 0; }
+#notice { width: 1fr; height: auto; max-height: 3; margin: 0 2; padding: 1 0 0 0; border-top: solid #344753; color: #A6B5C3; }
+Footer { background: #101820; color: #72D5E5; }
+.session-summary { height: auto; margin: 1 0 2 0; }
+#resume-options { height: 1fr; margin-top: 1; }
+#publication-checks, #publication-results { height: 1fr; }
+#preflight-details { height: 1fr; border: none; }
+#progress { height: 1; margin-bottom: 1; }
+#results { margin-top: 1; }
+ModalScreen { align: center middle; background: #101820 90%; }
+#dialog { width: 100%; height: 100%; padding: 1 2; background: #101820; }
+#review-position { height: auto; margin-bottom: 1; color: #72D5E5; text-style: bold; }
+#preview, #fields { height: 1fr; min-height: 3; }
+#preview { border: none; background: #101820; }
+.input-field { height: 4; }
+.field-name { color: #72D5E5; height: auto; margin-top: 1; }
+#input-title { height: auto; color: #72D5E5; text-style: bold; margin-bottom: 1; }
+.compact #app-title { height: 1; padding: 0 1; }
+.compact #repository { padding: 0 1; }
+.compact #pages { padding: 0 1; }
+.compact .heading { margin-bottom: 0; }
+.compact #filters { margin-bottom: 0; }
+.compact #summary { margin-bottom: 0; }
+.compact #details, .compact #evidence { height: 3; margin: 0; }
+.compact .buttons { layout: grid; grid-size: 3; grid-rows: 1; grid-gutter: 1; height: auto; min-height: 3; margin-top: 0; }
+.compact .buttons Button { width: 1fr; margin: 0; }
+.compact #notice { padding: 0; margin: 0 1; }
+.compact .session-summary { margin: 0 0 1 0; }
