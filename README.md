@@ -42,6 +42,18 @@ version. `OWNER/REPO` means GitHub.com; use an HTTPS URL or `HOST/OWNER/REPO` fo
 GitHub Enterprise. Enterprise hosts are retained in the output and Scorecard scan
 matching, including non-default HTTPS ports.
 
+Select and review remedies interactively for one repository:
+
+```shell
+RepoRemedy inspect report.txt --report-type repoauditor --repo OWNER/REPO --interactive
+RepoRemedy inspect --resume remedy-plan.json
+RepoRemedy publish --plan remedy-plan.json
+```
+
+The [interactive workflow](doc/interactive.md) supports bulk selection, input forms,
+issue/PR previews, save/resume and confirmed publication. JSON output remains the
+`inspect` default; add `--interactive` to open the terminal interface.
+
 Gather context and create concrete remedy proposals from an audit report:
 
 ```shell
