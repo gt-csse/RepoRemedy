@@ -9,15 +9,19 @@ uv run RepoRemedy inspect report.txt --report-type repoauditor \
 
 Use `--report-type ossf-scorecard` for Scorecard JSON. The report is read offline
 first. Browse findings and evidence, then choose **Select remedies** to collect
-repository context. Collection uses the audited commit when recorded, otherwise
-`main`, just like the existing proposal workflow. Set `REPOREMEDY_TOKEN` in your
+repository context. Collection uses `--ref` when supplied, otherwise the report's audited commit,
+otherwise the repository's live default branch (including `master` or `trunk`).
+The resolved target branch and commit are displayed before publication. To select
+another branch for a new session, add `--ref release/1.x`. Offline inspection
+rejects `--ref`; resume retains its recorded target and rejects ref overrides. Set `REPOREMEDY_TOKEN` in your
 environment before continuing, or use `--token-env ENTERPRISE_TOKEN` for another
 host-appropriate variable. Tokens are never stored in the plan.
 
 The terminal interface uses [Textual](https://textual.textualize.io/). It supports
 keyboard navigation and mouse input. `Tab` moves between controls; arrow keys
 browse lists; `Space` toggles a remedy or checkbox. `Ctrl+S` saves the session and
-`Ctrl+Q` saves and exits. The same actions are available as labeled buttons.
+`Ctrl+Q` saves and exits. Both shortcuts also work inside review and input dialogs.
+The main screens also provide labeled save/exit buttons.
 The layout follows the terminal mockups with a dark background, aligned columns,
 status colors and evidence below the remedy list. It adapts to 80×24 terminals;
 120×40 or larger provides more room for findings and previews. Terminal fonts and
@@ -40,7 +44,13 @@ returns. In multiline input forms, `Enter` inserts a newline; use the button or
 4. Use **Edit inputs / route** to choose an issue or an available draft PR route.
    Fill the catalog fields, approve those values, and generate the preview.
 5. Choose **Approve / next** for each ready proposal, or deselect it. Input
-   approval and content review are separate. Changing inputs or routes clears
+   approval and content review are separate. `Ctrl+S` in an input form saves
+   incomplete values and the chosen route as an **unapproved draft**. `Ctrl+Q`
+   saves that draft and exits. On resume, select Review then Edit inputs to
+   restore it. Saved drafts block approval/publication until you generate and
+   review the new preview or explicitly **Discard saved draft** and review the
+   original proposal. Cancel closes the form without applying unsaved edits;
+   previously saved drafts remain available. Changing inputs or routes clears
    the affected content review. Blocked proposals cannot be approved.
 6. When every selection has been reviewed, the **Review complete** screen shows
    ready/attention counts and the draft PR/issue split. Save and exit, change the
@@ -71,7 +81,7 @@ choices to continue to publication, review proposals, change selections or save
 and exit. Restoring a session itself makes no network requests.
 
 The versioned JSON plan embeds the existing proposal bundle, selections, inputs,
-route choices and exact-content review digests. It is written atomically and can
+route choices, unapproved input drafts, the requested ref and exact-content review digests. It is written atomically and can
 also be saved before context collection or before all inputs/reviews are complete.
 An existing plan is never replaced by a new inspection; resume it or choose a
 different `--plan` path. Use one session per plan file at a time.

@@ -114,3 +114,33 @@ def test_bad_resume_does_not_disclose_plan_content(tmp_path, monkeypatch):
     monkeypatch.setattr("RepoRemedy.interactive.sys.stdout.isatty", lambda: True)
     result = RUNNER.invoke(app, ["inspect", "--resume", str(path)])
     assert result.exit_code == 2 and "PRIVATE" not in result.output
+
+
+def test_interactive_ref_is_saved_and_cannot_override_resume(tmp_path, monkeypatch):
+    plan, _ = make_plan()
+    path = tmp_path / "session.json"
+    monkeypatch.setattr("RepoRemedy.interactive.sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("RepoRemedy.interactive.sys.stdout.isatty", lambda: True)
+    ui = Mock()
+    monkeypatch.setattr("RepoRemedy.tui.RemedyApp", ui)
+    run_inspection(plan.report, path, ref="release/1.x")
+    created = ui.call_args.args[0]
+    assert created.ref == "release/1.x"
+    save_plan(created, path)
+    run_inspection(None, path, resume=True)
+    assert ui.call_args.args[0].ref == "release/1.x"
+    with pytest.raises(ContextError, match="target ref"):
+        run_inspection(None, path, resume=True, ref="other")
+    result = RUNNER.invoke(app, ["inspect", "--resume", str(path), "--ref", "other"])
+    assert result.exit_code == 2 and "--ref" in result.output
+
+
+def test_cli_ref_requires_interactive_and_is_forwarded(tmp_path, monkeypatch):
+    calls = Mock()
+    monkeypatch.setattr("RepoRemedy.cli.run_inspection", calls)
+    args = ["inspect", str(REPORT), "--report-type", "repoauditor", "--repo", "acme/demo", "--ref", "trunk"]
+    result = RUNNER.invoke(app, args)
+    assert result.exit_code == 2 and not calls.called
+    result = RUNNER.invoke(app, [*args, "--interactive", "--plan", str(tmp_path / "session.json")])
+    assert result.exit_code == 0, result.output
+    assert calls.call_args.kwargs["ref"] == "trunk"

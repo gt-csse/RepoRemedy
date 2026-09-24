@@ -23,19 +23,23 @@ def run_inspection(
     *,
     resume: bool = False,
     token_env: str | None = None,
+    ref: str | None = None,
 ) -> None:
     """Require a terminal and avoid replacing another session accidentally."""
     if not sys.stdin.isatty() or not sys.stdout.isatty():
         message = "Interactive inspection requires a terminal; omit --interactive for JSON output"
         raise ContextError(message)
     if resume:
+        if ref is not None:
+            message = "Cannot change the target ref of a saved session; start a new inspection"
+            raise ContextError(message)
         plan = load_plan(path)
     else:
         if path.exists():
             message = "Plan already exists; use --resume or choose a new --plan path"
             raise ContextError(message)
         assert report is not None
-        plan = RemedyPlan(report=report)
+        plan = RemedyPlan(report=report, ref=ref)
     if token_env is not None:
         plan = RemedyPlan.model_validate(plan.model_dump() | {"token_env": token_env})
     from RepoRemedy.tui import RemedyApp  # noqa: PLC0415 - keep Textual out of JSON commands

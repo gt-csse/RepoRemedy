@@ -51,21 +51,31 @@ def inspect(
     plan: Annotated[Path, typer.Option("--plan", help="New saved session path.")] = Path("remedy-plan.json"),
     resume: Annotated[Path | None, typer.Option("--resume", exists=True, dir_okay=False)] = None,
     token_env: Annotated[str | None, typer.Option("--token-env")] = None,
+    ref: Annotated[
+        str | None,
+        typer.Option(
+            "--ref",
+            help="Interactive target branch or commit; otherwise audited commit or repository default.",
+        ),
+    ] = None,
 ) -> None:
     """Inspect offline findings as JSON, or continue interactively through remedy review."""
     try:
         if resume is not None:
-            if report is not None or report_type is not None or repo is not None:
-                message = "--resume cannot be combined with a report, --report-type or --repo"
+            if report is not None or report_type is not None or repo is not None or ref is not None:
+                message = "--resume cannot be combined with a report, --report-type, --repo or --ref"
                 raise typer.BadParameter(message)
             run_inspection(None, resume, resume=True, token_env=token_env)
             return
         if report is None or report_type is None or repo is None:
             message = "Provide REPORT, --report-type and --repo, or use --resume"
             raise typer.BadParameter(message)
+        if ref is not None and not interactive:
+            message = "--ref requires --interactive; offline inspection does not collect repository context"
+            raise typer.BadParameter(message)
         result = read_report(report, report_type, repo)
         if interactive:
-            run_inspection(result, plan, token_env=token_env)
+            run_inspection(result, plan, token_env=token_env, ref=ref)
         else:
             typer.echo(result.model_dump_json(indent=2))
     except (ReportError, ContextError) as exc:
