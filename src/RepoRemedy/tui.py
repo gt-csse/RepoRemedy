@@ -361,6 +361,8 @@ class RemedyApp(App[None]):
     @on(Select.Changed, "#filter")
     def show_candidates(self) -> None:
         """Filter views without losing selections outside the current view."""
+        if not self.is_running:
+            return
         if not self.query("#candidates"):
             return
         query = self.query_one("#search", Input).value.casefold()
@@ -434,11 +436,13 @@ class RemedyApp(App[None]):
     @on(RemedySelection.Resized)
     def resize_candidates(self) -> None:
         """Fit columns to the actual viewport after Textual applies its breakpoints."""
-        if self.query("#candidates"):
+        if self.is_running and self.query("#candidates"):
             self.call_after_refresh(self.show_candidates)
 
     def show_visible_count(self) -> None:
         """Describe the visible row range within the filtered list."""
+        if not self.is_running:
+            return
         candidates = self.query_one("#candidates", SelectionList)
         count = len(self.visible_indices)
         start = min(count, int(candidates.scroll_y) + 1)
@@ -463,6 +467,8 @@ class RemedyApp(App[None]):
 
     def show_candidate_details(self, index: int) -> None:
         """Refresh evidence even when a rebuilt list retains the same highlighted row."""
+        if not self.is_running:
+            return
         proposal = self.plan.get_proposals()[index]
         detail = "\n".join(
             [

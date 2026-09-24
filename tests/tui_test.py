@@ -415,3 +415,20 @@ def test_resolved_branch_is_visible_during_review_and_confirmation(tmp_path, mon
             assert not api.posts
 
     asyncio.run(exercise())
+
+
+def test_queued_selection_updates_after_shutdown_do_not_access_widgets(tmp_path):
+    plan, _ = make_plan()
+
+    async def exercise():
+        app = RemedyApp(plan, tmp_path / "session.json")
+        async with app.run_test() as pilot:
+            await pilot.pause()
+        assert not app.is_running
+        # Windows can deliver queued highlight/refresh callbacks during teardown.
+        app.show_candidate_details(0)
+        app.show_candidates()
+        app.show_visible_count()
+        app.resize_candidates()
+
+    asyncio.run(exercise())
