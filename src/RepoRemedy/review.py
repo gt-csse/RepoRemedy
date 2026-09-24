@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from rich.text import Text
 
+from textual.binding import Binding
 from textual import on
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
@@ -16,6 +17,12 @@ from RepoRemedy.context.github import ContextError
 if TYPE_CHECKING:
     from textual.app import ComposeResult
     from RepoRemedy.plan import RemedyPlan
+
+
+SESSION_BINDINGS = [
+    Binding("ctrl+s", "app.save", "Save", priority=True),
+    Binding("ctrl+q", "app.quit", "Save / exit", priority=True),
+]
 
 
 def get_remedy_name(identifier: str) -> str:
@@ -33,6 +40,8 @@ def render_proposal(plan: RemedyPlan, identifier: str) -> str:
     lines.extend(["", "Evidence"])
     lines.extend(f"{f.origin} {f.check} ({f.location}): {f.evidence}" for f in proposal.findings)
     lines.extend(proposal.reasons)
+    if identifier in plan.drafts:
+        lines.append("Unapplied input draft saved. Edit inputs to apply or discard it before approval.")
     lines.extend(f"Required: {key} - {reason}" for key, reason in proposal.missing_inputs.items())
     if proposal.content:
         for file in proposal.content.files:
@@ -51,7 +60,11 @@ def render_proposal(plan: RemedyPlan, identifier: str) -> str:
 class InputScreen(ModalScreen[bool]):
     """Use library text areas for multiline catalog inputs and explicit approval."""
 
-    BINDINGS: ClassVar = [("escape", "cancel", "Back"), ("ctrl+enter", "generate", "Generate preview")]
+    BINDINGS: ClassVar = [
+        *SESSION_BINDINGS,
+        ("escape", "cancel", "Back"),
+        ("ctrl+enter", "generate", "Generate preview"),
+    ]
 
     def __init__(self, plan: RemedyPlan, identifier: str) -> None:
         super().__init__()
@@ -71,13 +84,23 @@ class InputScreen(ModalScreen[bool]):
             if load_catalog().remedies[self.identifier].pr:
                 options.append(("Draft PR", "pr"))
             yield Select(
-                options, value=self.plan.get_proposal(self.identifier).route, allow_blank=False, id="route"
+                options,
+                value=self.plan.drafts[self.identifier].route
+                if self.identifier in self.plan.drafts
+                else self.plan.get_proposal(self.identifier).route,
+                allow_blank=False,
+                id="route",
             )
             yield VerticalScroll(id="fields")
             yield Checkbox("I approve these inputs for this repository", id="approve-inputs")
             with Horizontal(classes="buttons"):
                 yield Button("Generate preview", id="generate", variant="primary")
                 yield Button("Cancel", id="cancel-inputs")
+                yield Button(
+                    "Discard saved draft",
+                    id="discard-draft",
+                    disabled=self.identifier not in self.plan.drafts,
+                )
             yield Footer(show_command_palette=False)
 
     @on(Select.Changed, "#route")
@@ -86,6 +109,9 @@ class InputScreen(ModalScreen[bool]):
         route = self.query_one("#route", Select).value
         assert route in {"issue", "pr"}
         values = self.plan.get_editable_inputs(self.identifier, route)
+        draft = self.plan.drafts.get(self.identifier)
+        if draft is not None and draft.route == route:
+            values.update({key: value for key, value in draft.values.items() if key in values})
         self.fields = list(values)
         container = self.query_one("#fields", VerticalScroll)
         await container.remove_children()
@@ -95,6 +121,20 @@ class InputScreen(ModalScreen[bool]):
             )
             await container.mount(TextArea(value, id=f"input-{index}", classes="input-field"))
         self.query_one("#approve-inputs", Checkbox).value = False
+
+    def save_draft(self) -> None:
+        """Capture the current form without approving inputs or changing the preview."""
+        route = self.query_one("#route", Select).value
+        assert route in {"issue", "pr"}
+        values = {name: self.query_one(f"#input-{i}", TextArea).text for i, name in enumerate(self.fields)}
+        self.plan.save_input_draft(self.identifier, route, values)
+        self.query_one("#discard-draft", Button).disabled = self.identifier not in self.plan.drafts
+
+    @on(Button.Pressed, "#discard-draft")
+    def discard_draft(self) -> None:
+        """Discard unapproved saved edits; the original proposal still needs review."""
+        self.plan.drafts.pop(self.identifier, None)
+        self.dismiss(result=False)
 
     def action_generate(self) -> None:
         """Generate through the same approval gate as the button."""
@@ -130,6 +170,7 @@ class ReviewScreen(ModalScreen[None]):
     """Review each selected issue or PR, retaining selection and input controls."""
 
     BINDINGS: ClassVar = [
+        *SESSION_BINDINGS,
         ("enter", "approve", "Approve / next"),
         ("e", "edit", "Edit inputs"),
         ("d", "deselect", "Deselect"),
@@ -185,7 +226,9 @@ class ReviewScreen(ModalScreen[None]):
             preview.append(line + "\n", style=style)
         self.query_one("#preview", RichLog).clear().write(preview)
         self.query_one("#preview", RichLog).scroll_home(animate=False)
-        self.query_one("#approve", Button).disabled = proposal.status != "ready"
+        self.query_one("#approve", Button).disabled = (
+            proposal.status != "ready" or identifier in self.plan.drafts
+        )
 
     def action_approve(self) -> None:
         """Approve exact content using the shared plan validator."""

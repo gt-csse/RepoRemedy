@@ -41,7 +41,7 @@ from RepoRemedy.publication.receipts import (
     ReceiptJournal,
     load_receipts,
 )
-from RepoRemedy.review import ReviewScreen, get_remedy_name
+from RepoRemedy.review import InputScreen, ReviewScreen, get_remedy_name
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -201,6 +201,7 @@ class RemedyApp(App[None]):
         """Restore local state; only an explicit publication view performs preflight."""
         self.watch(self.query_one("#candidates"), "scroll_y", self.show_visible_count, init=False)
         self.query_one("#publication-results").display = False
+        self.show_target()
         self.query_one("#findings", OptionList).highlighted = 0 if self.plan.report.issues else None
         if self.plan.bundle:
             self.show_page("selection")
@@ -211,8 +212,19 @@ class RemedyApp(App[None]):
         if self.publish_only:
             self.prepare_publication()
 
+    def show_target(self) -> None:
+        """Name the resolved publication branch and reviewed commit before consent."""
+        bundle = self.plan.bundle
+        target = (
+            f"Branch {bundle.context.settings_branch} @ {bundle.base_commit[:12]}"
+            if bundle
+            else f"Ref {self.plan.ref or self.plan.report.source.audited_commit or 'repository default branch'}"
+        )
+        self.query_one("#repository", Label).update(f"{self.plan.report.repository}  ·  {target}")
+
     def show_page(self, page: str) -> None:
         """Move between workflow states and focus the primary keyboard control."""
+        self.show_target()
         self.query_one("#pages", ContentSwitcher).current = page
         primary = {
             "inspection": "#findings",
@@ -495,11 +507,18 @@ class RemedyApp(App[None]):
     def persist(self) -> bool:
         """Keep the session open if saving fails instead of losing the user's work."""
         try:
+            if isinstance(self.screen, InputScreen):
+                self.screen.save_draft()
             save_plan(self.plan, self.path)
         except OSError, ValueError, ContextError:
             self.show_notice("Cannot save plan. Check its path, permissions and size; session remains open.")
+            self.notify(
+                "Cannot save plan; session remains open. Check path, permissions and size.", severity="error"
+            )
             return False
         self.show_notice(f"Saved {self.path}")
+        if len(self.screen_stack) > 1:
+            self.notify("Session saved. Input drafts remain unapproved.")
         return True
 
     def action_save(self) -> None:

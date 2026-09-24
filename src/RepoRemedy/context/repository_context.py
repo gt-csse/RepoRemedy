@@ -423,13 +423,14 @@ def collect_context(
     repository: str,
     client: httpx.Client,
     *,
-    ref: str = "main",
+    ref: str | None = "main",
     token: str | None = None,
 ) -> RepositoryContext:
     """Resolve the requested ref once; fetch all file contents using immutable blob SHAs.
 
     repository accepts OWNER/REPO or an Enterprise HTTPS identity. ref defaults
     to main and accepts another branch or a full SHA (hex case is normalized).
+    Pass None to resolve the repository default branch from live metadata.
     Missing repositories/refs raise ContextError; collection never falls back to
     another revision. The caller owns client and supplies an optional host-specific
     token. API settings are live; relevant file content is pinned to the resolved
@@ -453,6 +454,12 @@ def collect_context(
     if not isinstance(full_name, str) or full_name.lower() != expected:
         message = "Repository identity differs from the requested repository"
         raise ContextError(message)
+    default_branch = metadata.get("default_branch")
+    if not isinstance(default_branch, str) or not default_branch:
+        message = "Repository has no readable default branch"
+        raise ContextError(message)
+    if ref is None:
+        ref = default_branch
     resolved = ref.lower() if SHA_PATTERN.fullmatch(ref) else ref
     branch_observation = None
     if not SHA_PATTERN.fullmatch(ref):
@@ -468,10 +475,6 @@ def collect_context(
     details = commit.get("commit")
     tree_info = details.get("tree") if isinstance(details, dict) else None
     tree_sha = _get_validated_sha(tree_info.get("sha") if isinstance(tree_info, dict) else None)
-    default_branch = metadata.get("default_branch")
-    if not isinstance(default_branch, str) or not default_branch:
-        message = "Repository has no readable default branch"
-        raise ContextError(message)
     # A historical commit has no unique branch; observe current default-branch settings.
     settings_branch = default_branch if SHA_PATTERN.fullmatch(ref) else ref
     tree = reader.read(f"/git/trees/{tree_sha}", {"recursive": "1"})

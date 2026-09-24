@@ -38,12 +38,22 @@ def get_review_digest(bundle: ProposalBundle, proposal: Proposal) -> str:
     return hashlib.sha256(content.encode()).hexdigest()
 
 
+class InputDraft(BaseModel):
+    """Unapproved form values; empty fields are valid while work is incomplete."""
+
+    model_config = ConfigDict(extra="forbid")
+    route: Literal["issue", "pr"]
+    values: dict[str, str]
+
+
 class RemedyPlan(BaseModel):
     """Local session; selection, input approval and content review are distinct."""
 
     model_config = ConfigDict(extra="forbid")
     schema_version: Literal[1] = 1
     report: Report
+    ref: str | None = Field(default=None, min_length=1)
+    drafts: dict[str, InputDraft] = Field(default_factory=dict)
     bundle: ProposalBundle | None = None
     selected: list[str] = Field(default_factory=list)
     reviewed: dict[str, str] = Field(default_factory=dict)
@@ -103,7 +113,7 @@ class RemedyPlan(BaseModel):
         context = collect_context(
             self.report.repository,
             client,
-            ref=self.report.source.audited_commit or "main",
+            ref=self.ref or self.report.source.audited_commit,
             token=os.environ.get(self.token_env),
         )
         bundle = propose_remedies(self.report, context, self.inputs)
@@ -163,6 +173,20 @@ class RemedyPlan(BaseModel):
             if key not in PROTECTED_INPUTS
         }
 
+    def save_input_draft(
+        self, identifier: str, route: Literal["issue", "pr"], values: dict[str, str]
+    ) -> None:
+        """Save incomplete edits separately, withholding approval until generated and reviewed."""
+        allowed = self.get_editable_inputs(identifier, route)
+        if set(values) != set(allowed):
+            message = "Draft fields do not match the selected route"
+            raise ContextError(message)
+        if values == allowed and route == self.get_proposal(identifier).route:
+            self.drafts.pop(identifier, None)
+        else:
+            self.drafts[identifier] = InputDraft(route=route, values=values)
+            self.reviewed.pop(identifier, None)
+
     def update_inputs(self, identifier: str, route: RouteChoice, values: dict[str, str]) -> None:
         """Approve input values, regenerate locally and require a new content review."""
         assert self.bundle is not None
@@ -177,21 +201,24 @@ class RemedyPlan(BaseModel):
         if identifier not in candidate.bundle.approved_inputs:
             candidate.bundle.approved_inputs.append(identifier)
         candidate.reviewed.pop(identifier, None)
+        candidate.drafts.pop(identifier, None)
         candidate.regenerate()
         self.inputs, self.routes = candidate.inputs, candidate.routes
         self.bundle, self.reviewed = candidate.bundle, candidate.reviewed
+        self.drafts = candidate.drafts
 
     def is_reviewed(self, identifier: str) -> bool:
         """Check review against the current proposal rather than a saved boolean."""
         return bool(
             self.bundle
+            and identifier not in self.drafts
             and self.reviewed.get(identifier) == get_review_digest(self.bundle, self.get_proposal(identifier))
         )
 
     def approve(self, identifier: str) -> None:
         """Record exact-content review only after the existing publisher validates it."""
-        if self.bundle is None or identifier not in self.selected:
-            message = "Select a remedy before approving its proposal"
+        if self.bundle is None or identifier not in self.selected or identifier in self.drafts:
+            message = "Select a remedy and apply or discard its input draft before approving"
             raise ContextError(message)
         proposal = select_proposals(self.bundle, [identifier], self.report.repository)[0]
         self.reviewed[identifier] = get_review_digest(self.bundle, proposal)
