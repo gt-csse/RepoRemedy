@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import httpx
 import pytest
 from typer.testing import CliRunner
+from rich.text import Text
 
 from plan_test import approve_plan, make_plan
 from RepoRemedy.cli import app
@@ -132,7 +133,7 @@ def test_interactive_ref_is_saved_and_cannot_override_resume(tmp_path, monkeypat
     with pytest.raises(ContextError, match="target ref"):
         run_inspection(None, path, resume=True, ref="other")
     result = RUNNER.invoke(app, ["inspect", "--resume", str(path), "--ref", "other"])
-    assert result.exit_code == 2 and "--ref" in result.output
+    assert result.exit_code == 2 and "--ref" in Text.from_ansi(result.output).plain
 
 
 def test_cli_ref_requires_interactive_and_is_forwarded(tmp_path, monkeypatch):
