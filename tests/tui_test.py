@@ -389,3 +389,29 @@ def test_preflight_blocks_confirmation_and_rechecks_after_failure(tmp_path, monk
             assert not (tmp_path / "publication-receipts.json").exists()
 
     asyncio.run(exercise())
+
+
+def test_resolved_branch_is_visible_during_review_and_confirmation(tmp_path, monkeypatch):
+    plan, api = make_plan()
+    # Keep the immutable evidence valid while collecting a non-main branch.
+    api.responses[""]["default_branch"] = "master"
+    api.responses["/branches/master"] = api.responses.pop("/branches/main")
+    plan.ref = "master"
+    with httpx.Client(transport=httpx.MockTransport(api)) as client:
+        plan.collect(client)
+    plan.update_inputs("security-policy", "issue", {})
+    approve_plan(plan)
+    install_api(monkeypatch, api)
+
+    async def exercise():
+        app = RemedyApp(plan, tmp_path / "session.json")
+        async with app.run_test(size=(80, 24)) as pilot:
+            await pilot.pause()
+            assert "Branch master @" in str(app.query_one("#repository", Label).content)
+            assert await pilot.click("#prepare-publication")
+            await wait_for_worker(app, pilot)
+            assert "Branch master @" in str(app.query_one("#repository", Label).content)
+            assert app.preflight is not None and app.preflight.can_publish()
+            assert not api.posts
+
+    asyncio.run(exercise())
