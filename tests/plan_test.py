@@ -189,3 +189,62 @@ def test_plan_and_receipts_cannot_overwrite_source(tmp_path, monkeypatch):
     monkeypatch.setattr("RepoRemedy.plan.MAX_PLAN_BYTES", 10)
     with pytest.raises(ContextError, match="size limit"):
         save_plan(plan, path)
+
+
+@pytest.mark.parametrize("ref", [None, "release", "a" * 40])
+def test_collection_resolves_default_branch_and_preserves_explicit_ref(ref):
+    api = PublishingGitHub()
+    api.responses[""]["default_branch"] = "master"
+    branch = api.responses.pop("/branches/main")
+    api.responses["/branches/master"] = branch
+    api.responses["/branches/release"] = branch
+    plan = RemedyPlan(report=make_report(), ref=ref)
+    with httpx.Client(transport=httpx.MockTransport(api)) as client:
+        plan.collect(client)
+    assert plan.bundle is not None
+    assert plan.bundle.context.requested_ref == (ref or "master")
+    assert plan.bundle.context.settings_branch == ("release" if ref == "release" else "master")
+    assert not any(r.url.path.endswith("/branches/main") for r in api.requests)
+
+
+def test_recorded_audit_commit_precedes_default_branch():
+    plan, api = make_plan()
+    plan.report.source.audited_commit = "a" * 40
+    with httpx.Client(transport=httpx.MockTransport(api)) as client:
+        plan.collect(client)
+    assert plan.bundle.context.requested_ref == "a" * 40
+
+
+def test_incomplete_drafts_survive_save_without_authorizing_publication(tmp_path):
+    plan, _ = make_plan()
+    approve_plan(plan)
+    original = plan.bundle.model_dump_json()
+    values = plan.get_editable_inputs("security-policy", "pr")
+    values.update(supported_versions="", security_reporting_instructions="Unfinished draft")
+    plan.save_input_draft("security-policy", "pr", values)
+    path = tmp_path / "plan.json"
+    save_plan(plan, path)
+    loaded = load_plan(path)
+    assert loaded.drafts["security-policy"].values == values
+    assert loaded.bundle is not None
+    assert loaded.bundle.model_dump_json() == original
+    assert not loaded.is_reviewed("security-policy")
+    with pytest.raises(ContextError):
+        loaded.approve("security-policy")
+    with pytest.raises(ContextError):
+        loaded.validate_publication()
+    values["supported_versions"] = "1.x"
+    loaded.update_inputs("security-policy", "pr", values)
+    assert not loaded.drafts and not loaded.is_reviewed("security-policy")
+    loaded.approve("security-policy")
+    assert loaded.validate_publication()
+
+
+def test_unchanged_draft_preserves_review_and_rejects_unknown_fields():
+    plan, _ = make_plan()
+    approve_plan(plan)
+    values = plan.get_editable_inputs("security-policy", "issue")
+    plan.save_input_draft("security-policy", "issue", values)
+    assert plan.is_reviewed("security-policy") and not plan.drafts
+    with pytest.raises(ContextError):
+        plan.save_input_draft("security-policy", "issue", values | {"evidence": "forged"})
