@@ -54,6 +54,9 @@ The [interactive workflow](doc/interactive.md) supports bulk selection, input fo
 issue/PR previews, save/resume and confirmed publication. JSON output remains the
 `inspect` default; add `--interactive` to open the terminal interface.
 
+Try the [illustrated live demo](doc/demo/interactive-live.md): clone the repository,
+use the included fixture reports, then select, review and publish draft PRs.
+
 Gather context and create concrete remedy proposals from an audit report:
 
 ```shell

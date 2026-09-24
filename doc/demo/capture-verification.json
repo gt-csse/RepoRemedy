@@ -1,0 +1,20 @@
+{
+  "captured_at": "2026-09-24T14:19:33.595484+00:00",
+  "implementation_commit": "3feb8d89a9df67b98957d21ca7cb3f6c38791fc4",
+  "repository": "ketanbj/reporemedy-live-fixture",
+  "base_commit": "e85598fda47e932f9b3cefeb0e4dbaaf3d882391",
+  "repoauditor_findings": 33,
+  "scorecard_findings": 15,
+  "selected_for_preflight": [
+    "ra-read-me",
+    "ra-contributing",
+    "ra-issue-templates",
+    "ra-pull-request-template"
+  ],
+  "new_publications": 0,
+  "existing_reused": "https://github.com/ketanbj/reporemedy-live-fixture/pull/1",
+  "requests_by_method": {
+    "GET": 113
+  },
+  "screenshots": 12
+}

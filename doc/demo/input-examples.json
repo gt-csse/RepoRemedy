@@ -1,0 +1,18 @@
+{
+  "ra-read-me": {
+    "project_name": "RepoRemedy live fixture",
+    "project_summary": "An intentionally incomplete repository for exercising audit and remediation workflows. Not a production application.",
+    "installation_instructions": "Clone https://github.com/ketanbj/reporemedy-live-fixture. No runtime installation is required for this documentation demo.",
+    "usage_instructions": "Audit this fixture, select remedies in RepoRemedy, review proposals, and publish draft PRs.",
+    "support_instructions": "Contact the fixture owner for demo questions. Do not submit secrets or real vulnerability reports here."
+  },
+  "ra-contributing": {
+    "development_setup": "Clone https://github.com/ketanbj/reporemedy-live-fixture. This documentation demo needs no build step.",
+    "test_instructions": "Review the Markdown and rerun RepoAuditor. No executable test suite is provided for this fixture.",
+    "contribution_process": "Open a draft PR targeting main. Leave demo PRs unmerged so repeated demo runs can reuse them."
+  },
+  "security-policy": {
+    "security_reporting_instructions": "Demo fixture only; no real vulnerability-reporting service is provided. Do not submit sensitive information here.",
+    "supported_versions": "Synthetic fixture only; no production releases are supported."
+  }
+}

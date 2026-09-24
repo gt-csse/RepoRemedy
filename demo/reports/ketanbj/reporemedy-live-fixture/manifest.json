@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-24",
+  "repository": "ketanbj/reporemedy-live-fixture",
+  "url": "https://github.com/ketanbj/reporemedy-live-fixture",
+  "default_branch": "main",
+  "observed_default_branch_commit": "e85598fda47e932f9b3cefeb0e4dbaaf3d882391",
+  "authentication": "Authenticated fixture-owner access; credentials excluded",
+  "repoauditor": {
+    "version": "0.4.8",
+    "python": "3.13",
+    "dependency_overrides": {
+      "typer": "0.15.4",
+      "click": "8.1.8"
+    },
+    "modules": [
+      "GitHub",
+      "CommunityStandards",
+      "ScientificSoftware"
+    ],
+    "report": "repoauditor.txt",
+    "exit_code": 255,
+    "reader_validation": {
+      "findings": 33,
+      "statuses": {
+        "error": 33
+      }
+    },
+    "sha256": "8c4449e87bb7379f14e5297a8a2a52d874eb09d8138853f2d3cbf155ec5d9edc"
+  },
+  "scorecard": {
+    "version": "v5.5.0",
+    "source_revision": "c395761df6afe1a69e476bc60a013a94bcbc153f",
+    "report": "scorecard.json",
+    "exit_code": 0,
+    "reader_validation": {
+      "findings": 15,
+      "statuses": {
+        "gap": 12,
+        "unavailable": 3
+      }
+    },
+    "sha256": "02035c657958f58467b6cbba99646a8cccaa6a9ba73943878d5280f43cc64933"
+  },
+  "notes": [
+    "Raw, unmodified tool exports. RepoAuditor settings and cloned files are not an atomic snapshot.",
+    "Reader validation used RepoRemedy commit 3feb8d89a9df67b98957d21ca7cb3f6c38791fc4.",
+    "Exit 255 with a complete RepoAuditor report represents findings; both exports passed the RepoRemedy reader.",
+    "Unavailable Scorecard evidence is not a confirmed defect.",
+    "This fixture is separate from the original ten-repository cohort and its manifest."
+  ]
+}
