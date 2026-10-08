@@ -15,9 +15,8 @@
 [![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/davidbrownell/2f9d770d13e3a148424f374f74d41f4b/raw/RepoRemedy_code_coverage.json)](https://github.com/gt-csse/RepoRemedy/actions)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/y/gt-csse/RepoRemedy?color=dark-green)](https://github.com/gt-csse/RepoRemedy/commits/main/)
 
-<!-- Content above this delimiter will be copied to the generated README.md file. DO NOT REMOVE THIS COMMENT, as it will cause regeneration to fail. -->
-
 ## Contents
+
 - [Overview](#overview)
 - [Installation](#installation)
 - [Development](#development)
@@ -25,57 +24,88 @@
 - [License](#license)
 
 ## Overview
-RepoRemedy aims to lower the barrier to software engineering best practices in
-open-source repositories. It will turn RepoAuditor text and OpenSSF Scorecard JSON
-findings into reviewable issues and pull requests.
+
+RepoRemedy aims to lower the barrier to applying software engineering best practices in open-source software (OSS) repositories.
+
+### Who is the target audience?
+
+RepoRemedy is targeted towards two main audiences:
+
+1) **OSS maintainers** who are interested to have an interactive and batched approach to fixing best practices issues in their repos. RepoRemedy allows for interactive exploration of common improvements as well as automated issue and PR generation to apply common "remedies" to a repository.
+2) **OSS auditors** who are interested in investigating and potentially applying fixes to multiple repositories. This audience might be an organizational or academic Open Source Program Office (OSPO) or a maintainer who manages a larger number of repositories. RepoRemedy allows for easier management and potentially replication of common fixes across repositories.
 
 ### How to use `RepoRemedy`
-Read an existing report and write normalized findings and source provenance as JSON:
+
+RepoRemedy has three steps where each step is a separate command. Only the last step makes changes to a GitHub repository.
+
+| Step | Command | What it does | Changes GitHub? |
+| --- | --- | --- | --- |
+| 1. Inspect | `inspect` | Reads a RepoAuditor or Scorecard report and lists the findings it can fix | No |
+| 2. Propose | `propose` | Reads the repository and drafts a concrete issue or PR for each finding | No |
+| 3. Publish | `publish` | Creates the issues and PRs you reviewed and approved | Yes, after `--confirm` |
+
+Reports come from RepoAuditor and Scorecard; see [generating input reports](doc/report-inputs.md). Use `--interactive` to run all three steps in one terminal session for a single repository.
+
+> [!NOTE]
+> The examples below target the [gt-csse/reporemedy-live-fixture](https://github.com/gt-csse/reporemedy-live-fixture) repository as an example. Replace it with your own repository (`OWNER/REPO`) to run them against your own project.
+
+#### 1. Inspect
+
+`inspect` reads an existing report and writes normalized findings and source provenance as JSON.
 
 ```shell
-RepoRemedy inspect report.json --report-type ossf-scorecard --repo acme/demo
-RepoRemedy inspect report.txt --report-type repoauditor --repo https://github.gatech.edu/sse-center/sse-resources
+RepoRemedy inspect scorecard_report.json --report-type ossf-scorecard --repo gt-csse/reporemedy-live-fixture
+RepoRemedy inspect report.txt --report-type repoauditor --repo https://github.com/gt-csse/reporemedy-live-fixture
 ```
 
-Use `RepoRemedy inspect --help` for inspection options and `RepoRemedy --version` for the installed
-version. `OWNER/REPO` means GitHub.com; use an HTTPS URL or `HOST/OWNER/REPO` for
-GitHub Enterprise. Enterprise hosts are retained in the output and Scorecard scan
-matching, including non-default HTTPS ports.
+Use `RepoRemedy inspect --help` for inspection options and `RepoRemedy --version` for the installed version. For GitHub Enterprise, use an HTTPS URL or `HOST/OWNER/REPO`.
 
-Select and review remedies interactively for one repository:
+> [!NOTE]
+> RepoRemedy currently supports RepoAuditor and OpenSSF ScoreCard reports as input. Please see  [report-inputs](doc/report-inputs.md) for more information on how to generate these reports and [demo/reports](demo/reports/) for example reports from sample projects.
+
+#### 2. Propose
+
+`propose` gathers context and creates concrete remedy proposals from an audit report:
 
 ```shell
-RepoRemedy inspect report.txt --report-type repoauditor --repo OWNER/REPO --interactive
-RepoRemedy inspect --resume remedy-plan.json
-RepoRemedy publish --plan remedy-plan.json
+RepoRemedy propose report.json --report-type ossf-scorecard --repo gt-csse/reporemedy-live-fixture > proposals.json
 ```
 
-The [interactive workflow](doc/interactive.md) supports bulk selection, input forms,
-issue/PR previews, save/resume and confirmed publication. JSON output remains the
-`inspect` default; add `--interactive` to open the terminal interface.
-
-Gather context and create concrete remedy proposals from an audit report:
-
-```shell
-RepoRemedy propose report.json --report-type ossf-scorecard --repo OWNER/REPO > proposals.json
-```
-
-`propose` reads the audited commit when recorded, otherwise `main`. Use `--ref main`
+`propose` will read the audited commit and branch used for a input report but can also use `main`. Use `--ref main`
 or a full commit SHA to select a revision explicitly. It resolves catalog inputs
 and renders an issue or an eligible draft PR, including file contents and diffs.
 Missing inputs and blocked proposals remain visible. `propose` makes no GitHub changes.
-Publish only reviewed selections with explicit confirmation:
+
+See [repository context](doc/repository-context.md) for authentication, collected
+context, maintainer inputs, PR guards and the saved proposal contract.
+
+#### 3. Publish
+
+Publish only reviewed selections, with explicit confirmation:
 
 ```shell
-RepoRemedy publish proposals.json --repo OWNER/REPO --select security-policy \
+RepoRemedy publish proposals.json --repo gt-csse/reporemedy-live-fixture --select security-policy \
   --receipts publication-receipts.json --confirm
 ```
 
 See [publishing remedies](doc/publishing.md) for permissions, stale-content checks,
 duplicate prevention and receipt recovery.
 
-See [proposing remedies](doc/repository-context.md) for authentication, collected
-context, maintainer inputs, PR guards and the saved proposal contract.
+#### Interactive mode
+
+To select and review remedies interactively for one repository, add `--interactive`. The session saves your selections to a plan file:
+
+```shell
+RepoRemedy inspect report.txt --report-type repoauditor --repo gt-csse/reporemedy-live-fixture --interactive
+RepoRemedy inspect --resume remedy-plan.json
+RepoRemedy publish --plan remedy-plan.json
+```
+
+`publish --plan` takes the plan file saved by an interactive session whereas `publish proposals.json` takes the output of `propose` run without an interactive session or other flags.
+
+The [interactive workflow](doc/interactive.md) supports bulk selection, input forms, issue/PR previews, save/resume and confirmed publication. Without `--interactive`, `inspect` prints findings as JSON to stdout and writes no file.
+
+#### Several repositories
 
 Generate proposals for several repositories using report-path templates:
 
@@ -87,8 +117,6 @@ The [batch workflow](doc/batch.md) uses the same remediation behavior as `propos
 preserves each repository's bundles and summary, and continues after input failures.
 Exit code `3` identifies partial failure; output directories must be new.
 
-<!-- Content below this delimiter will be copied to the generated README.md file. DO NOT REMOVE THIS COMMENT, as it will cause regeneration to fail. -->
-
 ## Installation
 
 | Installation Method | Command |
@@ -96,7 +124,10 @@ Exit code `3` identifies partial failure; output directories must be new.
 | Via [uv](https://github.com/astral-sh/uv) | `uv add RepoRemedy` |
 | Via [pip](https://pip.pypa.io/en/stable/) | `pip install RepoRemedy` |
 
+RepoRemedy requires Python 3.14 or later. See the [installation guide](doc/INSTALL.md) for requirements, GitHub token setup, installing from source, upgrading and troubleshooting.
+
 ### Verifying Signed Artifacts
+
 Artifacts are signed and verified using [py-minisign](https://github.com/x13a/py-minisign) and the public key in the file `./minisign_key.pub`.
 
 To verify that an artifact is valid, visit [the latest release](https://github.com/gt-csse/RepoRemedy/releases/latest) and download the `.minisign` signature file that corresponds to the artifact, then run the following command, replacing `<filename>` with the name of the artifact to be verified:
@@ -106,9 +137,11 @@ uv run --with py-minisign python -c "import minisign; minisign.PublicKey.from_fi
 ```
 
 ## Development
+
 Please visit [Contributing](https://github.com/gt-csse/RepoRemedy/blob/main/CONTRIBUTING.md) and [Development](https://github.com/gt-csse/RepoRemedy/blob/main/DEVELOPMENT.md) for information on contributing to this project.
 
 ## Additional Information
+
 Additional information can be found at these locations.
 
 | Title | Document | Description |
@@ -121,4 +154,5 @@ Additional information can be found at these locations.
 | Security | [SECURITY.md](https://github.com/gt-csse/RepoRemedy/blob/main/SECURITY.md) | Information about how to privately report security issues associated with this project. |
 
 ## License
-`RepoRemedy` is licensed under the <a href="https://choosealicense.com/licenses/MIT/" target="_blank">MIT</a> license.
+
+`RepoRemedy` is licensed under the [MIT](https://choosealicense.com/licenses/MIT/) license.
