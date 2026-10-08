@@ -15,9 +15,8 @@
 [![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/davidbrownell/2f9d770d13e3a148424f374f74d41f4b/raw/RepoRemedy_code_coverage.json)](https://github.com/gt-csse/RepoRemedy/actions)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/y/gt-csse/RepoRemedy?color=dark-green)](https://github.com/gt-csse/RepoRemedy/commits/main/)
 
-<!-- Content above this delimiter will be copied to the generated README.md file. DO NOT REMOVE THIS COMMENT, as it will cause regeneration to fail. -->
-
 ## Contents
+
 - [Overview](#overview)
 - [Installation](#installation)
 - [Development](#development)
@@ -25,10 +24,13 @@
 - [License](#license)
 
 ## Overview
-RepoRemedy aims to lower the barrier to applying software engineering best practices in open-source software (OSS) repositories. 
+
+RepoRemedy aims to lower the barrier to applying software engineering best practices in open-source software (OSS) repositories.
 
 ### Who is the target audience?
+
 RepoRemedy is targeted towards two main audiences:
+
 1) **OSS maintainers** who are interested to have an interactive and batched approach to fixing best practices issues in their repos. RepoRemedy allows for interactive exploration of common improvements as well as automated issue and PR generation to apply common "remedies" to a repository.
 2) **OSS auditors** who are interested in investigating and potentially applying fixes to multiple repositories. This audience might be an organizational or academic Open Source Program Office (OSPO) or a maintainer who manages a larger number of repositories. RepoRemedy allows for easier management and potentially replication of common fixes across repositories.
 
@@ -122,7 +124,10 @@ Exit code `3` identifies partial failure; output directories must be new.
 | Via [uv](https://github.com/astral-sh/uv) | `uv add RepoRemedy` |
 | Via [pip](https://pip.pypa.io/en/stable/) | `pip install RepoRemedy` |
 
+RepoRemedy requires Python 3.14 or later. See the [installation guide](doc/INSTALL.md) for requirements, GitHub token setup, installing from source, upgrading and troubleshooting.
+
 ### Verifying Signed Artifacts
+
 Artifacts are signed and verified using [py-minisign](https://github.com/x13a/py-minisign) and the public key in the file `./minisign_key.pub`.
 
 To verify that an artifact is valid, visit [the latest release](https://github.com/gt-csse/RepoRemedy/releases/latest) and download the `.minisign` signature file that corresponds to the artifact, then run the following command, replacing `<filename>` with the name of the artifact to be verified:
@@ -132,9 +137,11 @@ uv run --with py-minisign python -c "import minisign; minisign.PublicKey.from_fi
 ```
 
 ## Development
+
 Please visit [Contributing](https://github.com/gt-csse/RepoRemedy/blob/main/CONTRIBUTING.md) and [Development](https://github.com/gt-csse/RepoRemedy/blob/main/DEVELOPMENT.md) for information on contributing to this project.
 
 ## Additional Information
+
 Additional information can be found at these locations.
 
 | Title | Document | Description |
@@ -147,4 +154,5 @@ Additional information can be found at these locations.
 | Security | [SECURITY.md](https://github.com/gt-csse/RepoRemedy/blob/main/SECURITY.md) | Information about how to privately report security issues associated with this project. |
 
 ## License
-`RepoRemedy` is licensed under the <a href="https://choosealicense.com/licenses/MIT/" target="_blank">MIT</a> license.
+
+`RepoRemedy` is licensed under the [MIT](https://choosealicense.com/licenses/MIT/) license.
