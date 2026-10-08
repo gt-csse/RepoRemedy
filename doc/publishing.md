@@ -10,7 +10,7 @@ repository settings, merge PRs, or overwrite existing files.
 Review the titles, bodies, file contents and diffs in `proposals.json`, then run:
 
 ```shell
-RepoRemedy publish proposals.json --repo OWNER/REPO \
+RepoRemedy publish proposals.json --repo gt-csse/reporemedy-live-fixture \
   --select ra-require-approvals --select ra-issue-templates \
   --receipts publication-receipts.json --confirm
 ```
