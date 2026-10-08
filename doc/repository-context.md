@@ -16,7 +16,7 @@ Run from an installed package or prefix with `uv run` in a checkout:
 
 ```shell
 RepoRemedy propose report.json --report-type ossf-scorecard \
-  --repo OWNER/REPO > proposals.json
+  --repo gt-csse/reporemedy-live-fixture > proposals.json
 RepoRemedy propose report.txt --report-type repoauditor \
   --repo https://github.gatech.edu/OWNER/REPO --ref main \
   --token-env ENTERPRISE_TOKEN > proposals.json
@@ -128,7 +128,7 @@ Optional user inputs are a JSON object keyed by stable remedy ID:
 ```
 
 ```shell
-RepoRemedy propose report.txt --report-type repoauditor --repo OWNER/REPO \
+RepoRemedy propose report.txt --report-type repoauditor --repo gt-csse/reporemedy-live-fixture \
   --inputs maintainer-inputs.json --approve-inputs security-policy > proposals.json
 ```
 

@@ -4,7 +4,7 @@ Start with an existing RepoAuditor or OpenSSF Scorecard report:
 
 ```shell
 uv run RepoRemedy inspect report.txt --report-type repoauditor \
-  --repo OWNER/REPO --interactive --plan remedy-plan.json
+  --repo gt-csse/reporemedy-live-fixture --interactive --plan remedy-plan.json
 ```
 
 Use `--report-type ossf-scorecard` for Scorecard JSON. The report is read offline

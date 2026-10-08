@@ -9,7 +9,7 @@ have identical semantics. Batch processing prepares proposals; publication is pl
 as a separate, explicitly confirmed `publish` command.
 
 ```shell
-RepoRemedy propose report.json --report-type ossf-scorecard --repo OWNER/REPO > proposals.json
+RepoRemedy propose report.json --report-type ossf-scorecard --repo gt-csse/reporemedy-live-fixture > proposals.json
 RepoRemedy propose-batch demo/batch.json --output batch-results
 ```
 
