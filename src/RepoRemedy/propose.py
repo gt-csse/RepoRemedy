@@ -24,6 +24,18 @@ if TYPE_CHECKING:
 
 RouteChoice = Literal["auto", "issue", "pr"]
 
+AUDIT_SOURCES = {
+    "OSSF": (
+        "An automated check by the [OpenSSF Scorecard](https://github.com/ossf/scorecard) (OSSF) found a gap. "
+        "OSSF is a free tool from the Open Source Security Foundation that rates a repository's "
+        "security and maintenance practices from 0 to 10."
+    ),
+    "RA": (
+        "An automated check by [RepoAuditor](https://github.com/gt-csse/RepoAuditor) (RA) found a gap. "
+        "RA is a tool that checks a repository for commonly expected files and settings, such as a README or license."
+    ),
+}
+
 
 class FileChange(BaseModel):
     """Exact new content and a reviewable diff for a typed repository path.
@@ -126,6 +138,9 @@ def _render_content(route: Route, remedy: Remedy, values: Mapping[str, ResolvedI
     substitutions = {key: value.value for key, value in values.items()}
     substitutions["response"] = remedy.response
     substitutions["change_summary"] = route.change_summary or ""
+    substitutions["audit_source"] = AUDIT_SOURCES.get(
+        substitutions.get("origin", ""), "An automated check found a gap."
+    )
     changes = []
     for file in route.files:
         content = Template(read_asset("files", file.template)).substitute(substitutions)
