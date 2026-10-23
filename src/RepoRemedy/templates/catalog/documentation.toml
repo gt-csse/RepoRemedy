@@ -20,7 +20,7 @@ required_inputs = [
 [remedies."ra-citation".pr]
 title = "Add CITATION.cff to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `CITATION.cff` using reviewed repository information."
+change_summary = "**What is `CITATION.cff`?** It's a small file that tells people how to cite this project in papers and software. GitHub reads it and shows a \"Cite this repository\" button on the repository page. This repository doesn't have this file yet, so this PR adds it.\n\nPlease check that the title, authors and version are correct. **Prefer a different citation?** Edit the file before merging."
 required_inputs = [
     "repository",
     "origin",
@@ -56,7 +56,7 @@ required_inputs = [
 [remedies."ra-code-of-conduct".pr]
 title = "Add CODE_OF_CONDUCT.md to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `CODE_OF_CONDUCT.md` using reviewed repository information."
+change_summary = "**What is `CODE_OF_CONDUCT.md`?** It's the file that tells contributors how to behave in the project and who to contact if someone doesn't. GitHub links to it from the community profile and from new issues and PRs. This repository doesn't have this file yet, so this PR adds it.\n\n**Please confirm the enforcement contact** is a person or address that will actually be monitored. Edit the file if your project uses a different code of conduct."
 required_inputs = [
     "repository",
     "origin",
@@ -92,7 +92,7 @@ required_inputs = [
 [remedies."ra-code-owners".pr]
 title = "Add .github/CODEOWNERS to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `.github/CODEOWNERS` using reviewed repository information."
+change_summary = "**What is `CODEOWNERS`?** It's the file that tells GitHub which people or teams own which parts of the code. GitHub automatically asks those owners to review PRs that touch their files. This repository doesn't have this file yet, so this PR adds it.\n\n**Please check every owner listed** has write access to the repository, or GitHub will ignore the rule. If you want owners to be required reviewers, enable \"Require review from Code Owners\" in the branch protection settings."
 required_inputs = ["repository", "origin", "check", "evidence", "verification_steps", "approved_codeowners"]
 guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
 
@@ -121,7 +121,7 @@ required_inputs = [
 [remedies."ra-contributing".pr]
 title = "Add CONTRIBUTING.md to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `CONTRIBUTING.md` using reviewed repository information."
+change_summary = "**What is `CONTRIBUTING.md`?** It's the file that tells newcomers how to help: how to set up the project, run the tests and submit changes. GitHub links to it whenever someone opens an issue or PR. This repository doesn't have this file yet, so this PR adds it.\n\n**Please check that the setup and test commands work** as written, and edit anything that doesn't match how your team works."
 required_inputs = [
     "repository",
     "origin",
@@ -159,7 +159,7 @@ required_inputs = [
 [remedies."ra-issue-templates".pr]
 title = "Add issue templates to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add bug-report and feature-request templates under `.github/ISSUE_TEMPLATE/`."
+change_summary = "**What are issue templates?** They're forms that GitHub shows when someone opens a new issue. They ask for the details you need, such as steps to reproduce a bug, so reports are easier to act on. This repository doesn't have them yet, so this PR adds a bug-report and a feature-request template under `.github/ISSUE_TEMPLATE/`.\n\nEdit the questions to fit your project, and delete a template you don't want."
 required_inputs = ["repository", "origin", "check", "evidence", "verification_steps"]
 guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
 
@@ -193,7 +193,7 @@ required_inputs = [
 [remedies."ra-license-file".pr]
 title = "Add LICENSE to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `LICENSE` using reviewed repository information."
+change_summary = "**What is `LICENSE`?** It's the file that says what others are allowed to do with this code. Without one, the default is that nobody may reuse it. GitHub shows the detected license on the repository page. This repository doesn't have this file yet, so this PR adds it.\n\n**Choosing a license is a decision for the maintainers.** Please confirm that the license in this PR is the one you intend, and that the copyright holder is correct. Don't merge if you're unsure."
 required_inputs = ["repository", "origin", "check", "evidence", "verification_steps", "approved_license_text"]
 guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
 
@@ -222,7 +222,7 @@ required_inputs = [
 [remedies."ra-pull-request-template".pr]
 title = "Add .github/pull_request_template.md to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `.github/pull_request_template.md` using reviewed repository information."
+change_summary = "**What is a pull request template?** It's a short checklist that GitHub pre-fills in the description of every new PR, so contributors explain what they changed and how they tested it. This repository doesn't have one yet, so this PR adds it.\n\nEdit the checklist to match your review process."
 required_inputs = ["repository", "origin", "check", "evidence", "verification_steps"]
 guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
 
@@ -251,7 +251,7 @@ required_inputs = [
 [remedies."ra-read-me".pr]
 title = "Add README.md to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `README.md` using reviewed repository information."
+change_summary = "**What is `README.md`?** It's the front page of the repository. GitHub shows it below the file list, and it's the first thing visitors read to learn what the project does and how to use it. This repository doesn't have this file yet, so this PR adds it.\n\n**Please fill in or correct the installation and usage sections** so they match how the project really works."
 required_inputs = [
     "repository",
     "origin",
@@ -291,7 +291,7 @@ required_inputs = [
 [remedies."security-policy".pr]
 title = "Add SECURITY.md to ${repository}"
 body = "create-files-pr.md"
-change_summary = "Add `SECURITY.md` using reviewed repository information."
+change_summary = "**What is `SECURITY.md`?** It's the file GitHub uses to tell people how to report a security vulnerability in a project. When it's present, GitHub shows a \"Report a vulnerability\" link on the repository so researchers know where to send issues privately instead of opening a public one. This repository doesn't have this file yet, so this PR adds it.\n\nThe added `SECURITY.md` highlights the recommended best practice for reporting: **GitHub's private vulnerability reporting**, a built-in, private channel between researchers and maintainers. **If you haven't already, please turn it on** under the repository's **Settings → Code security**, then enable [Private vulnerability reporting](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).\n\n**Prefer to receive reports a different way?** Just edit `SECURITY.md` to point to your preferred contact instead, for example a dedicated security email address."
 required_inputs = [
     "repository",
     "origin",
