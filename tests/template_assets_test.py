@@ -60,6 +60,7 @@ def test_template_contract(catalog, remedy_id, data):
             allowed |= {"guards", "files", "change_summary"}
             assert isinstance(route["change_summary"], str) and route["change_summary"].strip()
             fixed["change_summary"] = route["change_summary"]
+            fixed["audit_source"] = "automated check"
         assert set(route) == allowed
         assert route["body"] in BODY_TYPES[name]
         body = safe_path(BODIES, route["body"])
