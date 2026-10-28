@@ -90,7 +90,7 @@ def _validate_route(remedy: Remedy, route: Route, kind: str) -> None:
     ):
         message = "Invalid route input declarations or issue-only fields"
         raise ContextError(message)
-    fixed = {"response"} | ({"change_summary"} if kind == "pr" else set())
+    fixed = {"response"} | ({"change_summary", "audit_source"} if kind == "pr" else set())
     texts = [route.title, read_asset("bodies", route.body)]
     if kind == "pr" and (
         set(route.guards) != {"confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"}
