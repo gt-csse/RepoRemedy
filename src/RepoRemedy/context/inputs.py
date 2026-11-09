@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 import json
+from pathlib import Path
 import re
 from typing import TYPE_CHECKING
 
@@ -12,8 +13,6 @@ from RepoRemedy.context.github import Observation, get_repository_address
 from RepoRemedy.context.repository_context import is_manifest_path
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from RepoRemedy.catalog import Remedy, Route
     from RepoRemedy.context.repository_context import RepositoryContext
     from RepoRemedy.models import Issue
@@ -50,6 +49,39 @@ FILE_STEMS = {
     "ra-pull-request-template": {"pull_request_template"},
     "ra-issue-templates": {"issue_template"},
 }
+# Updater configuration that already covers the Dependency-Update-Tool check.
+UPDATE_TOOL_CONFIGS = {
+    ".github/dependabot.yml",
+    ".github/dependabot.yaml",
+    "renovate.json",
+    "renovate.json5",
+    ".github/renovate.json",
+    ".github/renovate.json5",
+    ".gitlab/renovate.json",
+    ".gitlab/renovate.json5",
+    ".renovaterc",
+    ".renovaterc.json",
+    ".renovaterc.json5",
+}
+# Dependabot package-ecosystem names for manifests that identify an ecosystem by name alone.
+DEPENDABOT_ECOSYSTEMS = {
+    "package.json": "npm",
+    "pyproject.toml": "pip",
+    "setup.py": "pip",
+    "setup.cfg": "pip",
+    "pipfile": "pip",
+    "uv.lock": "uv",
+    "cargo.toml": "cargo",
+    "go.mod": "gomod",
+    "pom.xml": "maven",
+    "build.gradle": "gradle",
+    "build.gradle.kts": "gradle",
+    "gemfile": "bundler",
+    "composer.json": "composer",
+    "dockerfile": "docker",
+    ".gitmodules": "gitsubmodule",
+}
+VENDORED_DIRECTORIES = {"node_modules", "vendor", "third_party"}
 METADATA_KEYS = {
     "Description": "description",
     "TemplateRepository": "is_template",
@@ -87,6 +119,8 @@ class ResolvedInputs:
 
 def find_matching_files(context: RepositoryContext, remedy_id: str) -> list[Path]:
     """Locate file evidence including alternate community locations and issue forms."""
+    if remedy_id == "ossf-dependency-update-tool":
+        return sorted(path for path in context.paths if path.as_posix().lower() in UPDATE_TOOL_CONFIGS)
     stems = FILE_STEMS.get(remedy_id)
     if stems is None:
         return []
@@ -132,6 +166,44 @@ def _extract_section(context: RepositoryContext, names: tuple[str, ...]) -> Reso
     # Conflicting sections need a decision rather than an arbitrary first match.
     values = {c.value for c in candidates}
     return candidates[0] if len(values) == 1 else None
+
+
+def _detect_dependabot_updates(context: RepositoryContext) -> ResolvedInput | None:
+    """Map dependency manifests in the tree to Dependabot update entries.
+
+    Detection reads paths only; manifests are never parsed or executed. A partial
+    tree could omit ecosystems, so it leaves the value for a maintainer. Values are
+    JSON-quoted, which YAML accepts, so unusual directory names stay literal.
+    """
+    if not context.tree_complete:
+        return None
+    found = set()
+    for path in context.paths:
+        name = path.name.lower()
+        if VENDORED_DIRECTORIES & {part.lower() for part in path.parent.parts}:
+            continue
+        directory = "/" if path.parent == Path() else f"/{path.parent.as_posix()}"
+        if path.as_posix().lower().startswith(".github/workflows/") and name.endswith((".yml", ".yaml")):
+            found.add(("github-actions", "/"))
+        elif name in DEPENDABOT_ECOSYSTEMS:
+            found.add((DEPENDABOT_ECOSYSTEMS[name], directory))
+        elif name.startswith("requirements") and name.endswith(".txt"):
+            found.add(("pip", directory))
+        elif name.endswith((".csproj", ".fsproj")):
+            found.add(("nuget", directory))
+    # Dependabot's uv ecosystem also reads pyproject.toml, so pip would duplicate it.
+    found -= {("pip", directory) for ecosystem, directory in found if ecosystem == "uv"}
+    if not found:
+        return None
+    return ResolvedInput(
+        value="\n".join(
+            f"  - package-ecosystem: {json.dumps(ecosystem)}\n"
+            f"    directory: {json.dumps(directory)}\n"
+            '    schedule:\n      interval: "weekly"'
+            for ecosystem, directory in sorted(found)
+        ),
+        source=f"tree:{context.tree_sha}",
+    )
 
 
 def _describe_observed_state(context: RepositoryContext, remedy_id: str, issue: Issue) -> ResolvedInput:
@@ -269,6 +341,10 @@ def resolve_inputs(
                 + "\n".join(path.as_posix() for path in components),
                 source=f"tree:{context.tree_sha}",
             )
+    if "dependabot_updates" in route.required_inputs:
+        updates = _detect_dependabot_updates(context)
+        if updates:
+            values["dependabot_updates"] = updates
     metadata = context.observations["repository"].value
     if isinstance(metadata, dict):
         for field, name in (("project_name", "name"), ("project_summary", "description")):

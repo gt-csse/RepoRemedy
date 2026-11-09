@@ -23,12 +23,20 @@ The template assets have three directories:
 templates/
   catalog/  # Remedy definitions grouped by topic
   bodies/   # Five shared issue/PR body templates
-  files/    # Ten proposed-file assets, such as SECURITY.md and CONTRIBUTING.md
+  files/    # Eleven proposed-file assets, such as SECURITY.md and dependabot.yml
 ```
 
 A topic groups related findings. A body determines how a proposal is presented.
 These are independent: a code-of-conduct remedy belongs in the documentation
 catalog, but can request a maintainer decision before offering a file-creation PR.
+
+The dependency-update remedy offers a PR that adds `.github/dependabot.yml`. Its
+update entries come from manifest paths in a complete tree (for example
+`pyproject.toml`, `package.json` or `.github/workflows/*.yml`); manifests are never
+parsed or executed. An existing Dependabot or Renovate configuration blocks the PR.
+Version updates start once the file reaches the default branch. Dependabot security
+updates are a separate repository setting, so the response asks an administrator to
+enable them.
 
 The SAST remedy uses an engineering issue because configuring static analysis may
 require workflow changes. The webhook remedy uses a decision issue to assign
@@ -46,7 +54,7 @@ verification details, never credentials or authenticated webhook URLs.
 | [Documentation issue](../bodies/documentation-issue.md) | Request documentation or configuration after checking existing files. |
 | [File-creation PR](../bodies/create-files-pr.md) | Propose new files using approved content. |
 
-Every remedy defines an issue route; nine also define a PR route. The shared bodies
+Every remedy defines an issue route; ten also define a PR route. The shared bodies
 replace 77 separate issue/PR bodies. The [proposed-file assets](../files/) remain
 distinct because formats such as README, CODEOWNERS and citation metadata differ.
 

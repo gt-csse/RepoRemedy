@@ -12,7 +12,7 @@ This catalog retains 62 RA identifiers and 20 OSSF checks across 69 rows.
 Related protection checks share rows but can have different meanings or opposite settings.
 The 68 remedy definitions are grouped into five topic catalogs and use five shared
 body templates. Topic grouping is independent of issue/PR presentation. Every definition supports
-an issue; nine also define a file-creation PR. Existing-file
+an issue; ten also define a file-creation PR. Existing-file
 edits require a future editing strategy. See the [template design](design.md#non-llm-templates).
 
 The [catalog README](../src/RepoRemedy/templates/catalog/README.md) explains topic
@@ -93,7 +93,7 @@ files, shared bodies, definition fields and how to add or update a remedy.
 | Code-review evidence indicates possible gaps (`Code-Review`) | Settings + manual | Improve review practices and requirements; distinguish future enforcement from historical evidence. [Template: ossf-code-review](../src/RepoRemedy/templates/catalog/branch-protection.toml). | OSSF |
 | Contributor participation evidence needs review (`Contributors`) | Manual + documentation | Review participation barriers and improve onboarding in line with maintainer goals. [Template: ossf-contributors](../src/RepoRemedy/templates/catalog/maintainer-decisions.toml). | OSSF |
 | Workflow contains a reported dangerous pattern (`Dangerous-Workflow`) | Engineering | Repair the identified workflow pattern and validate its trigger, permissions and trust boundaries. [Template: ossf-dangerous-workflow](../src/RepoRemedy/templates/catalog/engineering.toml). | OSSF |
-| Dependency-update tooling is missing or not detected (`Dependency-Update-Tool`) | Configuration | Configure an appropriate updater for actual ecosystems and directories; verify a representative update. [Template: ossf-dependency-update-tool](../src/RepoRemedy/templates/catalog/engineering.toml). | OSSF |
+| Dependency-update tooling is missing or not detected (`Dependency-Update-Tool`) | Configuration | Configure an appropriate updater for actual ecosystems and directories; verify a representative update. Dependabot security updates are a separate repository setting that an administrator must enable. [Template: ossf-dependency-update-tool](../src/RepoRemedy/templates/catalog/engineering.toml). | OSSF |
 | Fuzzing coverage is missing or not detected (`Fuzzing`) | Manual + engineering | Choose useful fuzz targets, maintainable harnesses and owners; demonstrate execution and failure reporting. [Template: ossf-fuzzing](../src/RepoRemedy/templates/catalog/engineering.toml). | OSSF |
 | License evidence is missing or not recognized (`License`) | Manual + documentation | Resolve absent or unrecognized licensing using maintainer-approved content. [Template: ossf-license](../src/RepoRemedy/templates/catalog/maintainer-decisions.toml). | OSSF |
 | Maintenance activity indicates a possible continuity gap (`Maintained`) | Manual | Agree an honest support, ownership, continuity or archival plan with maintainers. [Template: ossf-maintained](../src/RepoRemedy/templates/catalog/maintainer-decisions.toml). | OSSF |

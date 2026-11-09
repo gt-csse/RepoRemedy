@@ -56,7 +56,7 @@ required_inputs = [
 
 [remedies."ossf-dependency-update-tool"]
 sources = { OSSF = ["Dependency-Update-Tool"] }
-response = "Configure an appropriate updater for actual ecosystems and directories; verify a representative update."
+response = "Configure an appropriate updater for actual ecosystems and directories; verify a representative update. Dependabot security updates are a separate repository setting that an administrator must enable."
 
 [remedies."ossf-dependency-update-tool".issue]
 title = "Dependency-update tooling is missing or not detected in ${repository}"
@@ -70,6 +70,25 @@ required_inputs = [
     "observed_state",
     "verification_steps",
 ]
+
+[remedies."ossf-dependency-update-tool".pr]
+title = "Add Dependabot version updates to ${repository}"
+body = "create-files-pr.md"
+change_summary = "Add `.github/dependabot.yml` so Dependabot opens weekly version-update PRs for the package ecosystems detected in the repository. Merging the file into the default branch activates version updates; no other setup is needed."
+required_inputs = [
+    "repository",
+    "origin",
+    "check",
+    "evidence",
+    "verification_steps",
+    "dependabot_updates",
+]
+guards = ["confirmed_gap", "target_absent", "no_equivalent_file", "approved_inputs"]
+
+[[remedies."ossf-dependency-update-tool".pr.files]]
+path = ".github/dependabot.yml"
+template = "dependabot.yml"
+operation = "create"
 
 [remedies."ossf-fuzzing"]
 sources = { OSSF = ["Fuzzing"] }

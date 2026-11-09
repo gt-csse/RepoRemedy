@@ -116,6 +116,69 @@ def test_alternate_pr_template_directory_blocks_duplicate_creation():
     assert proposal.status == "needs-review" and not proposal.guards["no_equivalent_file"]
 
 
+def test_dependency_update_pr_configures_detected_ecosystems():
+    yaml = pytest.importorskip("yaml")
+    api = FakeGitHub()
+    api.file("pyproject.toml", "[project]\nname='demo'\n")
+    api.file("uv.lock", "version = 1\n")
+    api.file("web/package.json", "{}")
+    api.file("services/api/requirements-dev.txt", "pytest\n")
+    api.file(".github/workflows/ci.yml", "name: CI")
+    api.file("web/node_modules/left-pad/package.json", "{}")
+    proposal = propose_remedies(
+        make_report("Dependency-Update-Tool", origin="OSSF"),
+        api.snapshot(),
+        approved_inputs={"ossf-dependency-update-tool"},
+    ).proposals[0]
+    assert proposal.status == "ready" and proposal.route == "pr" and all(proposal.guards.values())
+    assert proposal.content is not None and proposal.content.draft
+    assert "Dependabot" in proposal.content.title
+    assert "security updates" in proposal.content.body
+    (file,) = proposal.content.files
+    assert file.path == Path(".github/dependabot.yml")
+    assert proposal.inputs["dependabot_updates"].source == f"tree:{TREE}"
+    config = yaml.safe_load(file.content)
+    assert config["version"] == 2
+    assert [(u["package-ecosystem"], u["directory"]) for u in config["updates"]] == [
+        ("github-actions", "/"),
+        ("npm", "/web"),
+        ("pip", "/services/api"),
+        ("uv", "/"),
+    ]
+    assert all(u["schedule"] == {"interval": "weekly"} for u in config["updates"])
+
+
+@pytest.mark.parametrize("path", [".github/dependabot.yaml", "renovate.json", ".github/renovate.json5"])
+def test_existing_update_tool_config_blocks_dependabot_pr(path):
+    api = FakeGitHub()
+    api.file("package.json", "{}")
+    api.file(path, "{}")
+    proposal = propose_remedies(
+        make_report("Dependency-Update-Tool", origin="OSSF"),
+        api.snapshot(),
+        approved_inputs={"ossf-dependency-update-tool"},
+    ).proposals[0]
+    assert proposal.route == "issue" and proposal.status == "needs-review"
+    assert not proposal.guards["no_equivalent_file"]
+
+
+@pytest.mark.parametrize("truncated", [False, True])
+def test_dependency_update_pr_needs_input_without_detected_ecosystems(truncated):
+    api = FakeGitHub()
+    api.file("src/app.c", "int main(void) { return 0; }\n")
+    if truncated:
+        api.file("package.json", "{}")
+        api.responses[f"/git/trees/{TREE}"]["truncated"] = True
+    proposal = propose_remedies(
+        make_report("Dependency-Update-Tool", origin="OSSF"),
+        api.snapshot(),
+        route="pr",
+        approved_inputs={"ossf-dependency-update-tool"},
+    ).proposals[0]
+    assert proposal.status == "needs-input" and proposal.content is None
+    assert set(proposal.missing_inputs) == {"dependabot_updates"}
+
+
 def test_explicit_routes_keep_missing_values_and_blocked_guards_visible():
     context = FakeGitHub().snapshot()
     proposal = propose_remedies(make_report(), context, route="pr").proposals[0]

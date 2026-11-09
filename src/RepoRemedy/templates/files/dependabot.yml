@@ -1,0 +1,6 @@
+# Dependabot version updates. Each entry was detected from a dependency manifest
+# in this repository; review the ecosystems and directories before merging.
+# Options: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+version: 2
+updates:
+${dependabot_updates}
