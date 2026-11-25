@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "note": "Code review items.",
+  "batches": [
+    {
+      "id": "A",
+      "category": "Architecture",
+      "items": [
+        {
+          "id": "A-DRY",
+          "severity": "medium",
+          "text": "Ensure that the changes adhere to Don't Repeat Yourself (DRY) principles."
+        },
+        {
+          "id": "A-SOLID",
+          "severity": "medium",
+          "text": "Ensure that the changes adhere to SOLID design principles."
+        },
+        {
+          "id": "A-minimal",
+          "severity": "low",
+          "text": "Ensure that the changes implement functionality in the least amount of code possible."
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "category": "Correctness",
+      "items": [
+        {
+          "id": "C-intent",
+          "severity": "critical",
+          "text": "Ensure that the change implements the stated intent and nothing else."
+        },
+        {
+          "id": "C-boundary",
+          "severity": "high",
+          "text": "Ensure that boundary conditions are handled (null/None, empty, zero, negative, max values, off-by-one, etc.)."
+        },
+        {
+          "id": "C-concurrent",
+          "severity": "critical",
+          "text": "Ensure that concurrent/async paths are free of race conditions and ordering bugs."
+        },
+        {
+          "id": "C-types",
+          "severity": "high",
+          "text": "Ensure that types, interfaces, and contracts still hold after the change."
+        },
+        {
+          "id": "C-dead",
+          "severity": "low",
+          "text": "Ensure that dead or unreachable code paths are not introduced."
+        }
+      ]
+    },
+    {
+      "id": "DM",
+      "category": "Design and Maintainability",
+      "items": [
+        {
+          "id": "DM-patterns",
+          "severity": "medium",
+          "text": "Ensure that existing project patterns and layering is followed."
+        },
+        {
+          "id": "DM-naming",
+          "severity": "low",
+          "text": "Ensure that naming is clear and consistent."
+        },
+        {
+          "id": "DM-verb",
+          "severity": "low",
+          "text": "Ensure that function and method names are verbs; classes, types, and variables are nouns."
+        },
+        {
+          "id": "DM-premature",
+          "severity": "medium",
+          "text": "Ensure that no instances of premature abstractions or speculative generality were added."
+        },
+        {
+          "id": "DM-leaky",
+          "severity": "medium",
+          "text": "Ensure that no instances of leaky or misplaced responsibility were added."
+        },
+        {
+          "id": "DM-comments",
+          "severity": "low",
+          "text": "Ensure that comments explain why, not what."
+        },
+        {
+          "id": "DM-apis",
+          "severity": "high",
+          "text": "Ensure that public API and breaking changes are intentional and documented."
+        },
+        {
+          "id": "DM-filenames",
+          "severity": "low",
+          "text": "Ensure that filenames pertain to the domain or behavior and are not generic names like `models`, `types`, `schemas`, `entities`, etc."
+        }
+      ]
+    },
+    {
+      "id": "EH",
+      "category": "Error Handling and Resilience",
+      "items": [
+        {
+          "id": "EH-bare",
+          "severity": "high",
+          "text": "Ensure that errors are handled specifically, not swallowed by bare catch/except."
+        },
+        {
+          "id": "EH-propagate",
+          "severity": "high",
+          "text": "Ensure that failures propagate or are recovered with clear semantics."
+        },
+        {
+          "id": "EH-io",
+          "severity": "medium",
+          "text": "Ensure that timeouts, retries, and cancellation are considered where I/O occurs."
+        },
+        {
+          "id": "EH-cleanup",
+          "severity": "high",
+          "text": "Ensure that resource cleanup (files, connections, locks) happens on all paths."
+        }
+      ]
+    },
+    {
+      "id": "P",
+      "category": "Performance",
+      "items": [
+        {
+          "id": "P-loops",
+          "severity": "medium",
+          "text": "Ensure that there are no obvious N+1 queries or repeated work in loops."
+        },
+        {
+          "id": "P-quadratic",
+          "severity": "medium",
+          "text": "Ensure that hot paths avoid unnecessary allocation or quadratic algorithms."
+        },
+        {
+          "id": "P-payloads",
+          "severity": "high",
+          "text": "Ensure that large payloads or unbounded collections are guarded."
+        },
+        {
+          "id": "P-caching",
+          "severity": "medium",
+          "text": "Ensure that caching or batching is used only when justified and correct."
+        }
+      ]
+    },
+    {
+      "id": "S",
+      "category": "Security",
+      "items": [
+        {
+          "id": "S-secrets",
+          "severity": "critical",
+          "text": "Ensure that secrets, keys, tokens, credentials, etc. are not hardcoded."
+        },
+        {
+          "id": "S-validation",
+          "severity": "critical",
+          "text": "Ensure that user or external input is validated/sanitized at trust boundaries."
+        },
+        {
+          "id": "S-safe",
+          "severity": "critical",
+          "text": "Ensure that queries and commands use parameterization or safe APIs (no string concatenation)."
+        },
+        {
+          "id": "S-authorization",
+          "severity": "critical",
+          "text": "Ensure that authorization checks exist beyond mere authentication (IDOR, ownership, role)."
+        },
+        {
+          "id": "S-sensitive",
+          "severity": "high",
+          "text": "Ensure that sensitive data is not logged, returned in errors, or exposed in responses."
+        },
+        {
+          "id": "S-crypto",
+          "severity": "high",
+          "text": "Ensure that crypto uses modern primitives and correct modes; no weak hashes or ECB."
+        },
+        {
+          "id": "S-traversal",
+          "severity": "critical",
+          "text": "Ensure that path handling prevents traversal; redirects and URLs are validated."
+        }
+      ]
+    },
+    {
+      "id": "T",
+      "category": "Tests",
+      "items": [
+        {
+          "id": "T-new",
+          "severity": "high",
+          "text": "Ensure that new behavior has corresponding tests (or a clear reason why not)."
+        },
+        {
+          "id": "T-assert",
+          "severity": "medium",
+          "text": "Ensure that tests assert real behavior, not just mock interactions."
+        },
+        {
+          "id": "T-edge",
+          "severity": "medium",
+          "text": "Ensure that edge cases and failure modes are covered."
+        },
+        {
+          "id": "T-fail",
+          "severity": "medium",
+          "text": "Ensure that tests fail if the production change is removed."
+        }
+      ]
+    }
+  ]
+}

@@ -4,9 +4,10 @@
 
 The following individuals are responsible for maintaining this project. Feel free to reach out to any of them with questions or issues:
 
-| Maintainer        | GitHub Username   |
-| ----------------- | ----------------- |
-| Ketan Bhardwaj    | `@ketanbj`        |
+| Maintainer             | GitHub Username   |
+| ---------------------- | ----------------- |
+| Sriram Chockalingam    | `@srirampc`       |
+| David Brownell         | `@davidbrownell`  |
 
 ## Maintainer Responsibilities
 
